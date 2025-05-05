@@ -1,18 +1,9 @@
 #include "generator.h"
 
-Generator::Generator(QGraphicsObject *parent) : BaseObject(parent)
+Generator::Generator(QGraphicsObject *parent) : BaseObject(parent, ObjectType::Generator, QRect(0, 0, 50, 50), Qt::blue)
 {
 }
 
 Generator::~Generator()
 {
-}
-
-QRectF Generator::boundingRect() const {
-    return rect;
-}
-
-void Generator::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
-    painter->setBrush(Qt::red);
-    painter->drawRect(boundingRect());
 }

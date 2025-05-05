@@ -1,6 +1,6 @@
 #include "app.h"
 #include "scene.h"
-#include "sidebar.h"
+#include "lsidebar.h"
 #include "context.h"
 
 #include <QHBoxLayout>
@@ -19,9 +19,10 @@ App::App(QWidget *parent) : QMainWindow(parent)
     context = new Context(this);
 
     scene = new Scene(context);
-    sidebar = new Sidebar(context, this);
+    lsidebar = new LSidebar(context, this);
+    rsidebar = new RSidebar(context, this);
 
-    layout->addWidget(sidebar);
+    layout->addWidget(lsidebar);
 
     QGraphicsView *view = new QGraphicsView(scene);
     view->setRenderHint(QPainter::Antialiasing);
@@ -30,9 +31,13 @@ App::App(QWidget *parent) : QMainWindow(parent)
     view->show();
 
     layout->addWidget(view);
+    layout->addWidget(rsidebar);
 
-    sidebar->setFixedWidth(300);
+    lsidebar->setFixedWidth(300);
+    rsidebar->setFixedWidth(150);
     scene->setSceneRect(0, 0, 3000, 3000);
+
+    connect(scene, &Scene::objectSelected, rsidebar, &RSidebar::updateSelectedObject);
 }
 
 App::~App() {}

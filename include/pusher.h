@@ -3,13 +3,13 @@
 #include "conveyer.h"
 #include <QPainter>
 
-class Generator : public BaseObject
+class Pusher : public BaseObject
 {
 private:
     double frequency;
 
     Conveyer* related;
 public:
-    explicit Generator(QGraphicsObject *parent = nullptr);
-    virtual ~Generator();
+    explicit Pusher(QGraphicsObject *parent = nullptr);
+    virtual ~Pusher();
 };

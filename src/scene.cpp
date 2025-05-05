@@ -3,21 +3,10 @@
 #include "generator.h"
 #include "conveyer.h"
 #include <QGraphicsView>
+#include <QMessageBox>
 
 Scene::Scene(Context* context, QGraphicsScene *parent) : QGraphicsScene(parent), context(context)
 {
-    Generator *gen = new Generator();
-    gen->setPos(QPoint(50, 50));
-    this->addItem(gen);
-
-    Conveyer *conv = new Conveyer();
-    conv->setPos(QPoint(500, 50));
-    this->addItem(conv);
-
-    Receiver *recv = new Receiver();
-    recv->setPos(QPoint(50, 250));
-    this->addItem(recv);
-
     hoverRect = addRect(0, 0, gridSize, gridSize, QPen(Qt::green), QBrush(QColor(100, 100, 255, 50)));
     hoverRect->setZValue(100);
     hoverRect->setVisible(false);
@@ -40,25 +29,41 @@ void Scene::drawBackground(QPainter *painter, const QRectF &rect) {
 void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     if (event->button() == Qt::LeftButton) {
         QPointF pos = event->scenePos();
-
-        auto *object = context->createCurrentObject();
-
         double x = std::floor(pos.x() / gridSize) * gridSize;
         double y = std::floor(pos.y() / gridSize) * gridSize;
-        object->setPos(x, y);
+        QPointF location = QPointF(x, y);
 
-        if (checkLegal(object->sceneBoundingRect())) {
-            addItem(object);
-        };
+        if (context->getCurrentObjectType() != ObjectType::None) {
+            auto *obj = context->createCurrentObject();
+            obj->setPos(location);
+    
+            if (checkLegal(obj->sceneBoundingRect())) {
+                connect(obj, &BaseObject::clicked, this, &Scene::onObjectClicked);
+                addItem(obj);
+                updateHoverRect(pos);
+                return;
+            };
+        } 
     }
 
     QGraphicsScene::mousePressEvent(event);
 }
 
+void Scene::onObjectClicked(BaseObject *obj) {
+    emit objectSelected(obj);
+    obj->setHighlighted(!obj->isHighlighted());
+    update();
+}
+
 void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     QPointF pos = event->scenePos();
+    updateHoverRect(pos);
+    QGraphicsScene::mouseMoveEvent(event);
+}
 
+
+void Scene::updateHoverRect(QPointF pos) {
     double x = std::floor(pos.x() / gridSize) * gridSize;
     double y = std::floor(pos.y() / gridSize) * gridSize;
 
@@ -70,18 +75,26 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         hoverRect->setPen(QPen(Qt::red));
     }
     hoverRect->setVisible(true);
-
-    QGraphicsScene::mouseMoveEvent(event);
 }
 
 bool Scene::checkLegal(QRectF rect) {
     for (QGraphicsItem *item : this->items()) {
         if (auto *base = dynamic_cast<BaseObject *>(item)) {
-            QRectF item_rect = item->sceneBoundingRect();
             if (item->sceneBoundingRect().intersects(rect)) {
                 return false;
             }
         }
     }
     return true;
+}
+
+BaseObject* Scene::getObjectFromPos(QPointF pos) {
+    for (QGraphicsItem *item : this->items()) {
+        if (BaseObject *obj = dynamic_cast<BaseObject *>(item)) {
+            if (obj->pos() == pos) {
+                return obj;
+            }
+        }
+    }
+    return nullptr;
 }

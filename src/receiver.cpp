@@ -1,18 +1,9 @@
 #include "receiver.h"
 
-Receiver::Receiver(QGraphicsObject *parent) : BaseObject(parent)
+Receiver::Receiver(QGraphicsObject *parent) : BaseObject(parent, ObjectType::Receiver, QRect(0, 0, 50, 50), Qt::black)
 {
 }
 
 Receiver::~Receiver()
 {
-}
-
-QRectF Receiver::boundingRect() const {
-    return rect;
-}
-
-void Receiver::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
-    painter->setBrush(Qt::black);
-    painter->drawRect(boundingRect());
 }

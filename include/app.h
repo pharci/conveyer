@@ -1,7 +1,8 @@
 #pragma once
 
 #include <QtWidgets/QMainWindow>
-#include "sidebar.h"
+#include "lsidebar.h"
+#include "rsidebar.h"
 #include "context.h"
 #include "scene.h"
 
@@ -10,8 +11,9 @@ class App : public QMainWindow
     Q_OBJECT
 public:
     App(QWidget *parent = nullptr);
-    Sidebar *sidebar;
+    LSidebar *lsidebar;
     Scene *scene;
+    RSidebar *rsidebar;
     Context *context;
     ~App();
 };
