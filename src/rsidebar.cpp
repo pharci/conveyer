@@ -16,12 +16,14 @@ RSidebar::RSidebar(Context *context, QWidget *parent)
     objectNameLabel = new QLabel("Объект не выбран", this);
     layout->addWidget(objectNameLabel);
 
+    QPushButton *orientationBtn = new QPushButton("Повернуть", this);
+    connect(orientationBtn, &QPushButton::clicked, this, &RSidebar::turnObject);
+    layout->addWidget(orientationBtn);
+
     layout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding));
 
     selectedCountLabel = new QLabel("", this);
     deleteBtn = new QPushButton("Delete", this);
-    // selectedCountLabel->setVisible(false);
-    // deleteBtn->setVisible(false);
     layout->addWidget(selectedCountLabel);
     layout->addWidget(deleteBtn);
 
@@ -41,11 +43,15 @@ void RSidebar::paintEvent(QPaintEvent *event)
     painter.drawLine(0, 0, 0, height());
 }
 
+void RSidebar::turnObject() {
+    objectSelected->turn();
+}
+
 void RSidebar::updateSelectedObject(BaseObject *obj) {
     if (!obj) return;
+    objectSelected = obj;
     objectNameLabel->setText(obj->getObjectName());
     selectedCountLabel->setText("Выбрано: " + QString::number(context->getCountSelected()));
-    selectedCountLabel->setVisible(true);
 }
 
 void RSidebar::onBtnDeleteClicked() {

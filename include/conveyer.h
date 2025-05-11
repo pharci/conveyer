@@ -12,4 +12,5 @@ private:
 public:
     explicit Conveyer(QGraphicsObject *parent = nullptr);
     virtual ~Conveyer();
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override;
 };

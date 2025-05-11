@@ -12,4 +12,5 @@ private:
 public:
     explicit Pusher(QGraphicsObject *parent = nullptr);
     virtual ~Pusher();
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override;
 };

@@ -4,15 +4,6 @@
 #include <QPoint>
 #include <QRectF>
 
-
-enum class Orientation
-{
-    Up,
-    Down,
-    Left,
-    Right
-};
-
 enum class ObjectType
 {
     None,
@@ -25,14 +16,13 @@ enum class ObjectType
 class BaseObject : public QGraphicsObject 
 {
     Q_OBJECT
-private:
-    Orientation orientation;
+protected:
+    int rotationAngle = 0;
     QSet<QPoint> location;
     ObjectType type;
     QRectF shape;
     QColor color;
     bool highlighted = false;
-
 public:
     explicit BaseObject(
         QGraphicsObject *parent = nullptr, 
@@ -41,14 +31,16 @@ public:
         QColor color = Qt::gray
     );
     virtual ~BaseObject();
-    QRectF boundingRect() const;
+    QRectF boundingRect() const override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override;
+
     ObjectType getObjectType();
     QString getObjectName();
     void setHighlighted(bool value);
     bool isHighlighted();
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *);
-    void mousePressEvent(QGraphicsSceneMouseEvent *event);
-    
+    void turn();
+    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+
 signals:
     void clicked(BaseObject *self);
 };

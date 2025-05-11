@@ -12,4 +12,5 @@ private:
 public:
     explicit Receiver(QGraphicsObject *parent = nullptr);
     virtual ~Receiver();
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override;
 };

@@ -12,4 +12,5 @@ private:
 public:
     explicit Generator(QGraphicsObject *parent = nullptr);
     virtual ~Generator();
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override;
 };

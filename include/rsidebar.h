@@ -20,6 +20,7 @@ private:
 	QLabel* selectedCountLabel;
 	QPushButton* deleteBtn;
 	void onBtnDeleteClicked();
+	void turnObject();
 public slots:
     void updateSelectedObject(BaseObject *obj);
 };

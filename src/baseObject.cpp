@@ -55,3 +55,9 @@ void BaseObject::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     }
     QGraphicsObject::mousePressEvent(event);
 }
+
+void BaseObject::turn() {
+    rotationAngle = (rotationAngle + 90) % 360;
+    setTransformOriginPoint(boundingRect().center());
+    setRotation(rotationAngle);
+}
