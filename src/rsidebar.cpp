@@ -2,6 +2,7 @@
 #include <QVBoxLayout>
 #include <QToolButton>
 #include <QButtonGroup>
+#include <QPushButton>
 #include <QLabel>
 
 #include "rsidebar.h"
@@ -16,6 +17,16 @@ RSidebar::RSidebar(Context *context, QWidget *parent)
     layout->addWidget(objectNameLabel);
 
     layout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding));
+
+    selectedCountLabel = new QLabel("", this);
+    deleteBtn = new QPushButton("Delete", this);
+    // selectedCountLabel->setVisible(false);
+    // deleteBtn->setVisible(false);
+    layout->addWidget(selectedCountLabel);
+    layout->addWidget(deleteBtn);
+
+    connect(deleteBtn, &QPushButton::clicked, this, &RSidebar::onBtnDeleteClicked);
+
 }
 
 RSidebar::~RSidebar() {}
@@ -30,11 +41,19 @@ void RSidebar::paintEvent(QPaintEvent *event)
     painter.drawLine(0, 0, 0, height());
 }
 
-void RSidebar::setObjectSelected(BaseObject* obj) {
-    objectSelected = obj;
-}
-
 void RSidebar::updateSelectedObject(BaseObject *obj) {
     if (!obj) return;
     objectNameLabel->setText(obj->getObjectName());
+    selectedCountLabel->setText("Выбрано: " + QString::number(context->getCountSelected()));
+    selectedCountLabel->setVisible(true);
+}
+
+void RSidebar::onBtnDeleteClicked() {
+    for (QGraphicsItem* item : *context->getSelected()) {
+        if (item->scene()) {
+            item->scene()->removeItem(item);  
+            delete item;
+        }
+    }
+    context->clearSelected();
 }

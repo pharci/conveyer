@@ -4,6 +4,7 @@
 #include <QLabel>
 #include "scene.h"
 #include "context.h"
+#include <QPushButton>
 
 class RSidebar : public QWidget
 {
@@ -14,9 +15,11 @@ public:
 private:
 	Context *context;
     BaseObject* objectSelected;
-    void setObjectSelected(BaseObject* obj);
 	void paintEvent(QPaintEvent *event) override;
     QLabel* objectNameLabel;
+	QLabel* selectedCountLabel;
+	QPushButton* deleteBtn;
+	void onBtnDeleteClicked();
 public slots:
     void updateSelectedObject(BaseObject *obj);
 };

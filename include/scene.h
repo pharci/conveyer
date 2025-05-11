@@ -4,6 +4,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
+#include <QSet>
 
 class Scene : public QGraphicsScene
 {

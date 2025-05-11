@@ -19,6 +19,26 @@ void Context::setCurrentObjectType(int id) {
 
 ObjectType Context::getCurrentObjectType() { return currentObjectType; }
 
+void Context::addSelected(BaseObject* obj) {
+    selectedObjects.insert(obj);
+}
+
+void Context::removeSelected(BaseObject* obj) {
+    selectedObjects.remove(obj);
+}
+
+void Context::clearSelected() {
+    return selectedObjects.clear();
+}
+
+int Context::getCountSelected() {
+    return selectedObjects.count();
+}
+
+QSet<BaseObject *>* Context::getSelected() {
+    return &selectedObjects;
+}
+
 QString Context::objectTypeToString(ObjectType type) {
     switch (type) {
         case ObjectType::Generator: return "Generator";

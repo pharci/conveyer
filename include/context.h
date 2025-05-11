@@ -9,6 +9,12 @@ class Context : public QObject
 public:
     explicit Context(QObject *parent = nullptr);
     ~Context();
+
+    void addSelected(BaseObject* obj);
+    void removeSelected(BaseObject* obj);
+    int getCountSelected();
+    QSet<BaseObject *>* getSelected();
+    void clearSelected();
 public slots:
     void setCurrentObjectType(int id);
     ObjectType getCurrentObjectType();
@@ -16,4 +22,6 @@ public slots:
 protected:
     ObjectType currentObjectType;
     QString objectTypeToString(ObjectType type);
+
+    QSet<BaseObject *> selectedObjects;
 };

@@ -50,8 +50,14 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 }
 
 void Scene::onObjectClicked(BaseObject *obj) {
+    if (!obj->isHighlighted()) {
+        obj->setHighlighted(true);
+        context->addSelected(obj);
+    } else {
+        obj->setHighlighted(false);
+        context->removeSelected(obj);
+    }
     emit objectSelected(obj);
-    obj->setHighlighted(!obj->isHighlighted());
     update();
 }
 
