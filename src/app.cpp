@@ -33,7 +33,7 @@ App::App(QWidget *parent) : QMainWindow(parent)
     layout->addWidget(view);
     layout->addWidget(rsidebar);
 
-    lsidebar->setFixedWidth(300);
+    lsidebar->setFixedWidth(150);
     rsidebar->setFixedWidth(150);
     scene->setSceneRect(0, 0, 3000, 3000);
 

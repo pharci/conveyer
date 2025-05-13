@@ -21,3 +21,6 @@ void Pusher::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget 
     painter->drawRect(QRect(0, 0, 50, 10));
     painter->drawRect(QRect(15, 10, 20, 40));
 }
+
+void Pusher::connection(QList<BaseObject*> objects) {
+}

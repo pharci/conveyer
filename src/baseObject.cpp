@@ -1,4 +1,6 @@
 #include "baseObject.h"
+#include "conveyer.h"
+#include "scene.h"
 #include <QPainter>
 
 BaseObject::BaseObject(QGraphicsObject *parent, ObjectType type, QRectF shape, QColor color) : 
@@ -60,4 +62,34 @@ void BaseObject::turn() {
     rotationAngle = (rotationAngle + 90) % 360;
     setTransformOriginPoint(boundingRect().center());
     setRotation(rotationAngle);
+
+    if (auto* sc = dynamic_cast<Scene*>(scene())) {
+        QList<BaseObject*> neighbors = sc->findNeighbors(this);
+        this->connection(neighbors);
+        sc->update();
+    }
+}
+
+int BaseObject::getRotationAngle() {
+    return rotationAngle;
+}
+
+Direction BaseObject::getDirection() const {
+    switch (rotationAngle % 360) {
+        case 0: return Direction::Right;
+        case 90: return Direction::Down;
+        case 180: return Direction::Left;
+        case 270: return Direction::Up;
+        default: return Direction::None;
+    }
+}
+
+QPointF BaseObject::directionToOffset(Direction dir) const {
+    switch (dir) {
+        case Direction::Right: return QPointF(50, 0);
+        case Direction::Left:  return QPointF(-50, 0);
+        case Direction::Down:  return QPointF(0, 50);
+        case Direction::Up:    return QPointF(0, -50);
+        default: return QPointF(0, 0);
+    }
 }

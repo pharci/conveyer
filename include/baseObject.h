@@ -4,6 +4,15 @@
 #include <QPoint>
 #include <QRectF>
 
+enum class Direction 
+{
+    Up,
+    Down,
+    Left,
+    Right,
+    None
+}; 
+
 enum class ObjectType
 {
     None,
@@ -18,6 +27,7 @@ class BaseObject : public QGraphicsObject
     Q_OBJECT
 protected:
     int rotationAngle = 0;
+    Direction direction = Direction::Right;
     QSet<QPoint> location;
     ObjectType type;
     QRectF shape;
@@ -40,6 +50,11 @@ public:
     bool isHighlighted();
     void turn();
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+    int getRotationAngle();
+    Direction getDirection() const;
+    QPointF directionToOffset(Direction dir) const;
+
+    virtual void connection(QList<BaseObject*> objects) = 0;
 
 signals:
     void clicked(BaseObject *self);

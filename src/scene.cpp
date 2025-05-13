@@ -4,15 +4,29 @@
 #include "conveyer.h"
 #include <QGraphicsView>
 #include <QMessageBox>
+#include <QTimer>
 
 Scene::Scene(Context* context, QGraphicsScene *parent) : QGraphicsScene(parent), context(context)
 {
     hoverRect = addRect(0, 0, gridSize, gridSize, QPen(Qt::green), QBrush(QColor(100, 100, 255, 50)));
     hoverRect->setZValue(100);
     hoverRect->setVisible(false);
+
+    timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, this, &Scene::onTick);
+    timer->start(30);
 }
 
 Scene::~Scene() {}
+
+void Scene::onTick() {
+    for (auto* item : items()) {
+        auto* baseItem = dynamic_cast<BaseItem *>(item);
+        if (baseItem) {
+            baseItem->updatePos();
+        }
+    }
+}
 
 void Scene::drawBackground(QPainter *painter, const QRectF &rect) {
     QPen pen(QColor(200, 200, 200));
@@ -41,8 +55,12 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
                 connect(obj, &BaseObject::clicked, this, &Scene::onObjectClicked);
                 addItem(obj);
                 updateHoverRect(pos);
+
+                QList<BaseObject*> neighbors = findNeighbors(obj);
+                obj->connection(neighbors);
+                update();
                 return;
-            };
+            }
         } 
     }
 
@@ -103,4 +121,16 @@ BaseObject* Scene::getObjectFromPos(QPointF pos) {
         }
     }
     return nullptr;
+}
+
+QList<BaseObject*> Scene::findNeighbors(BaseObject* objCenter) {
+    QList<QPointF> poses = {QPointF(0, -gridSize), QPointF(0, gridSize), QPointF(-gridSize, 0), QPointF(gridSize, 0)};
+    QList<BaseObject*> neighbors;
+    for (QPointF pos : poses) {
+        BaseObject *obj = getObjectFromPos(objCenter->pos() + pos);
+        if (obj) {
+            neighbors.append(obj);
+        }
+    }
+    return neighbors;
 }

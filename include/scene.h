@@ -5,6 +5,8 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
 #include <QSet>
+#include <QHash>
+#include <QList>
 
 class Scene : public QGraphicsScene
 {
@@ -12,7 +14,7 @@ class Scene : public QGraphicsScene
 public:
     explicit Scene(Context* context, QGraphicsScene *parent = nullptr);
     ~Scene();
-    
+    QList<BaseObject*> findNeighbors(BaseObject* objCenter);
 protected:
     void drawBackground(QPainter *painter, const QRectF &rect) override;
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
@@ -21,12 +23,12 @@ protected:
     BaseObject* getObjectFromPos(QPointF pos);
     void onObjectClicked(BaseObject *obj);
     void updateHoverRect(QPointF pos);
-
 private:
+    QTimer* timer = nullptr;
     const int gridSize = 50;
     Context* context;
     QGraphicsRectItem *hoverRect = nullptr;
-
+    void onTick();
 signals:
     void objectSelected(BaseObject *obj);
 };

@@ -14,7 +14,7 @@ public:
 	~RSidebar();
 private:
 	Context *context;
-    BaseObject* objectSelected;
+    BaseObject* objectSelected = nullptr;
 	void paintEvent(QPaintEvent *event) override;
     QLabel* objectNameLabel;
 	QLabel* selectedCountLabel;

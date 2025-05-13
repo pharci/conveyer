@@ -5,6 +5,10 @@
 #include <QPushButton>
 #include <QLabel>
 
+#include "scene.h"
+#include "conveyer.h"
+#include "generator.h"
+#include "receiver.h"
 #include "rsidebar.h"
 #include "context.h"
 
@@ -44,22 +48,54 @@ void RSidebar::paintEvent(QPaintEvent *event)
 }
 
 void RSidebar::turnObject() {
-    objectSelected->turn();
+    if (objectSelected != nullptr)
+        objectSelected->turn();
 }
 
 void RSidebar::updateSelectedObject(BaseObject *obj) {
-    if (!obj) return;
     objectSelected = obj;
-    objectNameLabel->setText(obj->getObjectName());
     selectedCountLabel->setText("Выбрано: " + QString::number(context->getCountSelected()));
+    if (obj == nullptr) {
+        objectNameLabel->setText("Не выбрано");
+        return;
+    }
+    objectNameLabel->setText(obj->getObjectName());
 }
 
 void RSidebar::onBtnDeleteClicked() {
-    for (QGraphicsItem* item : *context->getSelected()) {
-        if (item->scene()) {
-            item->scene()->removeItem(item);  
-            delete item;
+    for (BaseObject* obj : *context->getSelected()) {
+        auto* sc = dynamic_cast<Scene*>(obj->scene());
+        QList<BaseObject*> neighbors = sc->findNeighbors(obj);
+
+        for (auto neighbor : neighbors) {
+            if (auto* conv = qobject_cast<Conveyer*>(neighbor)) {
+                if (conv->getNext() == obj) conv->setNext(nullptr);
+                if (conv->getPrev() == obj) conv->setPrev(nullptr);
+            }
+            if (auto* gen = qobject_cast<Generator*>(neighbor)) {
+                if (gen->getRelated() == obj) gen->setRelated(nullptr);
+            }
+            if (auto* recv = qobject_cast<Receiver*>(neighbor)) {
+                if (recv->getRelated() == obj) recv->setRelated(nullptr);
+            }
         }
+
+
+        if (auto* conv = qobject_cast<Conveyer*>(obj)) {
+            QList<BaseItem*> items = conv->getItems();
+            if (items.size()) {
+                for (auto* item : items) {
+                    conv->removeItem(item);
+                    item->setConveyer(nullptr);
+                    item->deleteLater();
+                }
+            }
+        }
+
+        obj->deleteLater();
+        sc->update();
     }
+
     context->clearSelected();
+    updateSelectedObject(nullptr);
 }

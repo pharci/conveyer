@@ -13,8 +13,6 @@ Context::~Context() {}
 
 void Context::setCurrentObjectType(int id) {
     this->currentObjectType = static_cast<ObjectType>(id);
-
-    QMessageBox::information(nullptr, "Выбран:", objectTypeToString(currentObjectType));
 }
 
 ObjectType Context::getCurrentObjectType() { return currentObjectType; }
