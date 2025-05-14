@@ -2,14 +2,16 @@
 #include "generator.h"
 #include "scene.h"
 
-Receiver::Receiver(QGraphicsObject *parent) : BaseObject(parent, ObjectType::Receiver, QRect(0, 0, 50, 50), Qt::black) {}
+Receiver::Receiver(QGraphicsObject *parent) : BaseObject(parent, ObjectType::Receiver) {
+    shape.addRect(QRect(0, 0, 50, 50));
+}
 
 Receiver::~Receiver() {}
 
 void Receiver::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
     QRectF rect = boundingRect();
     if (related != nullptr) {
-        painter->setBrush(color);
+        painter->setBrush(Qt::black);
     } else {
         painter->setBrush(Qt::red);
     }
@@ -42,24 +44,8 @@ void Receiver::connection(QList<BaseObject*> objects) {
 
     for (BaseObject* neighbor : objects) {
         if (auto* conv = qobject_cast<Conveyer*>(neighbor)) {
-            bool directionMatches = false;
-            switch (conv->getDirection()) {
-                case Direction::Right:
-                    directionMatches = this->pos().x() > conv->pos().x();
-                    break;
-                case Direction::Left:
-                    directionMatches = this->pos().x() < conv->pos().x();
-                    break;
-                case Direction::Up:
-                    directionMatches = this->pos().y() < conv->pos().y();
-                    break;
-                case Direction::Down:
-                    directionMatches = this->pos().y() > conv->pos().y();
-                    break;
-                default:
-                    return;
-            }
-            if (directionMatches) {
+            Direction dir = conv->getDirectionTo(conv->pos(), this->pos());
+            if (conv->getOutDir() == dir) {
                 setRelated(conv);
                 conv->setNext(this);
             }

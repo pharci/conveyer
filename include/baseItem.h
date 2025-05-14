@@ -12,12 +12,4 @@ public:
 
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override;
-
-    void updatePos();
-
-    void setConveyer(Conveyer* c);
-    Conveyer* getConveyer() const;
-
-private:
-    Conveyer* currentConveyer = nullptr;
 };

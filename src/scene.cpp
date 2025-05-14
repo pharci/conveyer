@@ -21,9 +21,8 @@ Scene::~Scene() {}
 
 void Scene::onTick() {
     for (auto* item : items()) {
-        auto* baseItem = dynamic_cast<BaseItem *>(item);
-        if (baseItem) {
-            baseItem->updatePos();
+        if (auto* conv = dynamic_cast<Conveyer *>(item)) {
+            conv->moveItems();
         }
     }
 }

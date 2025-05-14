@@ -48,8 +48,8 @@ void RSidebar::paintEvent(QPaintEvent *event)
 }
 
 void RSidebar::turnObject() {
-    if (objectSelected != nullptr)
-        objectSelected->turn();
+    if (auto* conv = qobject_cast<Conveyer*>(objectSelected))
+        conv->turn();
 }
 
 void RSidebar::updateSelectedObject(BaseObject *obj) {
@@ -77,18 +77,6 @@ void RSidebar::onBtnDeleteClicked() {
             }
             if (auto* recv = qobject_cast<Receiver*>(neighbor)) {
                 if (recv->getRelated() == obj) recv->setRelated(nullptr);
-            }
-        }
-
-
-        if (auto* conv = qobject_cast<Conveyer*>(obj)) {
-            QList<BaseItem*> items = conv->getItems();
-            if (items.size()) {
-                for (auto* item : items) {
-                    conv->removeItem(item);
-                    item->setConveyer(nullptr);
-                    item->deleteLater();
-                }
             }
         }
 

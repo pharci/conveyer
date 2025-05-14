@@ -26,33 +26,23 @@ class BaseObject : public QGraphicsObject
 {
     Q_OBJECT
 protected:
-    int rotationAngle = 0;
-    Direction direction = Direction::Right;
-    QSet<QPoint> location;
     ObjectType type;
-    QRectF shape;
-    QColor color;
+    QPainterPath shape = QPainterPath();
     bool highlighted = false;
 public:
     explicit BaseObject(
         QGraphicsObject *parent = nullptr, 
-        ObjectType type = ObjectType::None, 
-        QRectF shape = QRectF(0, 0, 50, 50), 
-        QColor color = Qt::gray
+        ObjectType type = ObjectType::None
     );
     virtual ~BaseObject();
     QRectF boundingRect() const override;
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override;
+    virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override = 0;
 
     ObjectType getObjectType();
     QString getObjectName();
     void setHighlighted(bool value);
     bool isHighlighted();
-    void turn();
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
-    int getRotationAngle();
-    Direction getDirection() const;
-    QPointF directionToOffset(Direction dir) const;
 
     virtual void connection(QList<BaseObject*> objects) = 0;
 
