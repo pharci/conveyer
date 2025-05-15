@@ -15,6 +15,7 @@ public:
     explicit Scene(Context* context, QGraphicsScene *parent = nullptr);
     ~Scene();
     QList<BaseObject*> findNeighbors(BaseObject* objCenter);
+    int getGridSize() const;
 protected:
     void drawBackground(QPainter *painter, const QRectF &rect) override;
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
@@ -25,7 +26,7 @@ protected:
     void updateHoverRect(QPointF pos);
 private:
     QTimer* timer = nullptr;
-    const int gridSize = 50;
+    const int gridSize = 100;
     Context* context;
     QGraphicsRectItem *hoverRect = nullptr;
     void onTick();

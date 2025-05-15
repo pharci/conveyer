@@ -3,18 +3,12 @@
 #include "scene.h"
 #include <QPainter>
 
-BaseObject::BaseObject(QGraphicsObject *parent, ObjectType type) : 
-    QGraphicsObject(parent), 
-    type(type)
-{
-}
+BaseObject::BaseObject(QGraphicsObject *parent, ObjectType type) : QGraphicsObject(parent), type(type) {}
 
-BaseObject::~BaseObject()
-{
-}
+BaseObject::~BaseObject() {}
 
-QRectF BaseObject::boundingRect() const {
-    return shape.boundingRect();
+QRectF BaseObject::boundingRect() const { 
+    return QRect(0, 0, 100, 100); 
 }
 
 QString BaseObject::getObjectName() {

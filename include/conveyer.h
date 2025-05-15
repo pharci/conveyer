@@ -8,13 +8,15 @@ class Conveyer : public BaseObject
     Q_OBJECT
 private:
     int rotationAngle = 0;
-    double speed = 1.0;
+    double speed = 2.0;
     QList<BaseItem*> items;
     BaseObject* prev = nullptr;
     BaseObject* next = nullptr;
     bool isCorner = false;
     Direction inDir = Direction::Left;
     Direction outDir = Direction::Right;
+    QPointF startPoint, endPoint, centerPoint;
+    QMap<QGraphicsItem*, qreal> itemProgress;
 public:
     explicit Conveyer(QGraphicsObject *parent = nullptr);
     virtual ~Conveyer();
@@ -33,10 +35,11 @@ public:
     Direction getInDir();
     Direction getOutDir();
 
+    QPointF getStartPoint();
+
     void turn();
     void moveItems();
     Direction getDirectionTo(const QPointF& from, const QPointF& to);
-    void updateShape(Direction inDir, Direction outDir);
     Direction angleInDir(int angle);
     Direction angleOutDir(int angle);
 };

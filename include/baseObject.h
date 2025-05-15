@@ -27,7 +27,6 @@ class BaseObject : public QGraphicsObject
     Q_OBJECT
 protected:
     ObjectType type;
-    QPainterPath shape = QPainterPath();
     bool highlighted = false;
 public:
     explicit BaseObject(

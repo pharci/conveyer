@@ -4,7 +4,6 @@
 #include "scene.h"
 
 Generator::Generator(QGraphicsObject *parent) : BaseObject(parent, ObjectType::Generator) {
-    shape.addRect(QRect(0, 0, 50, 50));
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &Generator::spawnItem);
     timer->start(1000);
@@ -14,21 +13,13 @@ Generator::~Generator() {}
 
 void Generator::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
     QRectF rect = boundingRect();
-    if (related != nullptr) {
-        painter->setBrush(Qt::blue);
-    } else {
-        painter->setBrush(Qt::red);
-    }
+    if ( related != nullptr) { painter->setBrush(Qt::blue); } 
+    else { painter->setBrush(Qt::red); }
+    if (highlighted) { painter->setPen(QPen(Qt::green, 3));}
     painter->drawRect(rect);
 
-    if (highlighted) {
-        QPen pen(Qt::green, 3);
-        painter->setPen(pen);
-        painter->drawRect(rect);
-    }
-
     painter->setBrush(Qt::white);
-    painter->drawEllipse(rect.center(), 15, 15);
+    painter->drawEllipse(rect.center(), rect.width() / 2 - 10, rect.width() / 2 - 10);
 }
 
 void Generator::setRelated(BaseObject* obj) { 
@@ -60,7 +51,7 @@ void Generator::spawnItem() {
     Conveyer* conveyer = static_cast<Conveyer*>(related);
     auto* item = new BaseItem();
 
-    item->setPos(QPointF(0, conveyer->boundingRect().width() / 2));
+    item->setPos(conveyer->getStartPoint());
 
     conveyer->addItem(item);
 

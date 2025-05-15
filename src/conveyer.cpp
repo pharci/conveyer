@@ -4,49 +4,9 @@
 #include "scene.h"
 #include <QDebug>
 
-Conveyer::Conveyer(QGraphicsObject *parent) : BaseObject(parent, ObjectType::Conveyer) {
-    shape.addRect(QRect(0, 5, 50, 40));
-}
+Conveyer::Conveyer(QGraphicsObject *parent) : BaseObject(parent, ObjectType::Conveyer) {}
 
 Conveyer::~Conveyer() {}
-
-void Conveyer::updateShape(Direction inDir, Direction outDir) {
-
-    shape = QPainterPath();
-
-    const qreal thickness = 20;
-    const qreal length = 50;
-
-    QRectF hor, vert;
-
-    if ((inDir == Direction::Left && outDir == Direction::Down) ||
-        (inDir == Direction::Down && outDir == Direction::Left)) {
-        hor = QRectF(0, 0, length, thickness);
-        vert = QRectF(length - thickness, 0, thickness, length);
-    }
-    else if ((inDir == Direction::Left && outDir == Direction::Up) ||
-             (inDir == Direction::Up && outDir == Direction::Left)) {
-        hor = QRectF(0, thickness, length, thickness);
-        vert = QRectF(length - thickness, 0, thickness, thickness);
-    }
-    else if ((inDir == Direction::Right && outDir == Direction::Down) ||
-             (inDir == Direction::Down && outDir == Direction::Right)) {
-        hor = QRectF(0, 0, length, thickness);
-        vert = QRectF(0, 0, thickness, length);
-    }
-    else if ((inDir == Direction::Right && outDir == Direction::Up) ||
-             (inDir == Direction::Up && outDir == Direction::Right)) {
-        hor = QRectF(0, thickness, length, thickness);
-        vert = QRectF(0, 0, thickness, thickness);
-    }
-    else {
-        shape.addRect(QRectF(0, thickness, length, thickness));
-        return;
-    }
-
-    shape.addRect(hor);
-    shape.addRect(vert);
-}
 
 QDebug operator<<(QDebug debug, const Direction& dir) {
     switch (dir) {
@@ -60,58 +20,61 @@ QDebug operator<<(QDebug debug, const Direction& dir) {
 }
 
 void Conveyer::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
-    QRectF rect = boundingRect();
-    qreal offset = 5;
-
-    shape = QPainterPath();
-    shape.addRect(QRect(0, 5, 50, 40));
-
-    QPointF start(rect.left() + offset, rect.center().y());
     prepareGeometryChange();
-    if (inDir == Direction::Left && outDir == Direction::Down) {
-        start = QPointF(rect.center().x(),rect.bottom() - offset);
-        shape = QPainterPath();
-        shape.addRect(QRectF(5, 5, 40, 45));
-        shape.addRect(QRectF(45, 5, 5, 40));
-    }
-    else if (inDir == Direction::Left && outDir == Direction::Up) {
-        start = QPointF(rect.center().x(),rect.top() + offset);
-    }
-    else if (inDir == Direction::Right && outDir == Direction::Down) {
-        start = QPointF(rect.center().x(),rect.top() + offset);
-    }
-    else if (inDir == Direction::Right && outDir == Direction::Up) {
-        start = QPointF(rect.center().x(),rect.bottom() - offset);
-    }
-    else if (inDir == Direction::Up && outDir == Direction::Right) {
-        start = QPointF(rect.center().x(), rect.top() + offset);
-    }
-    else if (inDir == Direction::Up && outDir == Direction::Left) {
-        start = QPointF(rect.center().x(), rect.bottom() - offset);
-    }
-    else if (inDir == Direction::Down && outDir == Direction::Right) {
-        start = QPointF(rect.center().x(), rect.bottom() - offset);
-    }
-    else if (inDir == Direction::Down && outDir == Direction::Left) {
-        start = QPointF(rect.center().x(), rect.top() + offset);
-    }
-
-    QPointF end(rect.right() - offset, rect.center().y());
-
-    if (highlighted) { painter->setPen(QPen(Qt::green, 3)); }
-    painter->fillPath(shape, QBrush(Qt::red));
-    if (prev != nullptr && next != nullptr) { painter->fillPath(shape, QBrush(Qt::gray)); }
-    painter->drawPath(shape);
-
-    painter->setPen(QPen(Qt::white, 2));
+    QRectF r = boundingRect();
+    qreal t = 10;
     QPainterPath path;
-    path.moveTo(start);
-    path.lineTo(rect.center());
-    path.lineTo(end);
-    path.lineTo(end + QPointF(-offset, -offset));
-    path.moveTo(end);
-    path.lineTo(end + QPointF(-offset, offset));
-    painter->drawPath(path);
+
+    startPoint = QPointF();
+    endPoint = QPointF(r.right() - t, r.center().y());
+
+    if (inDir == Direction::Left && outDir == Direction::Down || 
+        inDir == Direction::Right && outDir == Direction::Up ||
+        inDir == Direction::Up && outDir == Direction::Left ||
+        inDir == Direction::Down && outDir == Direction::Right) {
+        path.addRect(QRectF(t, t, r.width() - 2*t, r.height() - t));
+        path.addRect(QRectF(r.width() - t, t, t, r.height() - 2*t));
+        startPoint.setX(r.center().x());
+        startPoint.setY(r.bottom());
+        centerPoint = QPoint(r.right(), r.bottom());
+        isCorner = true;
+    } 
+    else if (
+        inDir == Direction::Left && outDir == Direction::Up ||
+        inDir == Direction::Right && outDir == Direction::Down ||
+        inDir == Direction::Up && outDir == Direction::Right ||
+        inDir == Direction::Down && outDir == Direction::Left) {
+        path.addRect(QRectF(t, 0, r.width() - 2*t, r.height() - t));
+        path.addRect(QRectF(r.width() - t, t, t, r.height() - 2*t));
+        startPoint.setX(r.center().x());
+        startPoint.setY(r.top());
+        centerPoint = QPoint(r.right(), r.top());
+        isCorner = true;
+    }
+    else {
+        path.addRect(QRect(0, t, r.width(), r.height() - 2*t));
+        startPoint.setX(r.left());
+        startPoint.setY(r.center().y());
+        isCorner = false;
+    }
+
+    //rect
+    if (highlighted) painter->setPen(QPen(Qt::green, 3));
+    else painter->setPen(QPen(Qt::black, 2));
+    if (prev != nullptr && next != nullptr) painter->fillPath(path, Qt::gray);
+    else painter->fillPath(path, Qt::red);
+    painter->drawPath(path.simplified());
+
+    //arrow
+    painter->setPen(QPen(Qt::white, 2));
+    QPainterPath arrowPath;
+    arrowPath.moveTo(startPoint);
+    arrowPath.lineTo(r.center());
+    arrowPath.lineTo(endPoint);
+    arrowPath.lineTo(endPoint + QPointF(-t, -t));
+    arrowPath.moveTo(endPoint);
+    arrowPath.lineTo(endPoint + QPointF(-t, t));
+    painter->drawPath(arrowPath);
 }
 
 Direction Conveyer::getDirectionTo(const QPointF& from, const QPointF& to) {
@@ -180,28 +143,13 @@ QList<BaseItem*> Conveyer::getItems() { return items; }
 double Conveyer::getSpeed() { return speed; }
 Direction Conveyer::getInDir() { return inDir; }
 Direction Conveyer::getOutDir() { return outDir; }
+QPointF Conveyer::getStartPoint() { return startPoint; };
 
 void Conveyer::turn() {
     if (!prev && !next || prev && next) {
         rotationAngle = (rotationAngle + 90) % 360;
-        switch (rotationAngle) {
-            case 90:
-                inDir = Direction::Up;
-                outDir = Direction::Down;
-                break;
-            case 180:
-                inDir = Direction::Right;
-                outDir = Direction::Left;
-                break;
-            case 270:
-                inDir = Direction::Down;
-                outDir = Direction::Up;
-                break;
-            default: // 0 град
-                inDir = Direction::Left;
-                outDir = Direction::Right;
-                break;
-        }
+        inDir = angleOutDir(rotationAngle);
+        outDir = angleInDir(rotationAngle);
         setTransformOriginPoint(boundingRect().center());
         setRotation(rotationAngle);
         for (auto* item : items) { item->setRotation(rotationAngle); }
@@ -250,20 +198,63 @@ Direction Conveyer::angleOutDir(int angle) {
 void Conveyer::moveItems() {
     if (items.size()) {
         for (auto* item : items) {
-            if (item->pos().x() - boundingRect().x() < boundingRect().width()) {
-                item->moveBy(speed, 0);
+            if (isCorner) {
+                if (!itemProgress.contains(item)) itemProgress[item] = 0.0;
+
+                qreal& t = itemProgress[item];
+                t += speed / 50.0;
+
+                if (t >= 1.0) {
+                    if (auto* conv = qobject_cast<Conveyer*>(next)) {
+                        conv->addItem(item);
+                        item->setParentItem(conv);
+                        item->setPos(conv->startPoint);
+                        items.removeOne(item);
+                        itemProgress.remove(item);
+                    } else if (auto* recv = qobject_cast<Receiver*>(next)) {
+                        recv->addItem(item);
+                        items.removeOne(item);
+                        itemProgress.remove(item);
+                    }
+                    continue;
+                }
+
+                // Движение по дуге
+                qreal radius = QLineF(centerPoint, startPoint).length();
+
+                qreal angleStart = std::atan2(startPoint.y() - centerPoint.y(), startPoint.x() - centerPoint.x());
+                qreal angleEnd   = std::atan2(endPoint.y() - centerPoint.y(), endPoint.x() - centerPoint.x());
+
+                // корректировка угла, чтобы не было отрицательного направления
+                qreal deltaAngle = angleEnd - angleStart;
+                if (deltaAngle < -M_PI) deltaAngle += 2 * M_PI;
+                if (deltaAngle > M_PI)  deltaAngle -= 2 * M_PI;
+
+                qreal angle = angleStart + t * deltaAngle;
+
+                QPointF pos = QPointF(
+                    centerPoint.x() + radius * std::cos(angle),
+                    centerPoint.y() + radius * std::sin(angle)
+                );
+                item->setPos(pos);
             }
-            else { 
-                if (auto* conv = qobject_cast<Conveyer*>(next)) {
-                    conv->addItem(item);
-                    item->setParentItem(conv);
-                    item->setPos(QPointF(0, boundingRect().width() / 2));
-                    items.removeOne(item);
+            else {
+                if (item->pos().x() - boundingRect().x() < boundingRect().width()) {
+                    item->moveBy(speed, 0);
                 }
-                if (auto* recv = qobject_cast<Receiver*>(next)) {
-                    recv->addItem(item);
-                    items.removeOne(item);
+                else { 
+                    if (auto* conv = qobject_cast<Conveyer*>(next)) {
+                        conv->addItem(item);
+                        item->setParentItem(conv);
+                        item->setPos(conv->startPoint);
+                        items.removeOne(item);
+                    }
+                    if (auto* recv = qobject_cast<Receiver*>(next)) {
+                        recv->addItem(item);
+                        items.removeOne(item);
+                    }
                 }
+
             }
         }
     }

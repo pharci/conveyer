@@ -2,26 +2,16 @@
 #include "generator.h"
 #include "scene.h"
 
-Receiver::Receiver(QGraphicsObject *parent) : BaseObject(parent, ObjectType::Receiver) {
-    shape.addRect(QRect(0, 0, 50, 50));
-}
+Receiver::Receiver(QGraphicsObject *parent) : BaseObject(parent, ObjectType::Receiver) {}
 
 Receiver::~Receiver() {}
 
 void Receiver::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
     QRectF rect = boundingRect();
-    if (related != nullptr) {
-        painter->setBrush(Qt::black);
-    } else {
-        painter->setBrush(Qt::red);
-    }
+    if (related != nullptr) { painter->setBrush(Qt::black); } 
+    else { painter->setBrush(Qt::red); }
+    if (highlighted) { painter->setPen(QPen(Qt::green, 3)); }
     painter->drawRect(rect);
-
-    if (highlighted) {
-        QPen pen(Qt::green, 3);
-        painter->setPen(pen);
-        painter->drawRect(rect);
-    }
 
     painter->setBrush(Qt::green);
     painter->drawEllipse(rect.center(), 15, 15);

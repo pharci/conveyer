@@ -14,7 +14,7 @@ Scene::Scene(Context* context, QGraphicsScene *parent) : QGraphicsScene(parent),
 
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &Scene::onTick);
-    timer->start(30);
+    timer->start(16);
 }
 
 Scene::~Scene() {}
@@ -25,6 +25,10 @@ void Scene::onTick() {
             conv->moveItems();
         }
     }
+}
+
+int Scene::getGridSize() const {
+    return gridSize;
 }
 
 void Scene::drawBackground(QPainter *painter, const QRectF &rect) {
