@@ -37,5 +37,6 @@ public:
     void moveItems();
     Direction getDirectionTo(const QPointF& from, const QPointF& to);
     void updateShape(Direction inDir, Direction outDir);
-    Direction angleToDir(int angle);
+    Direction angleInDir(int angle);
+    Direction angleOutDir(int angle);
 };
