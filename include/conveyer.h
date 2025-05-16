@@ -1,8 +1,8 @@
 #pragma once
-#include "baseObject.h"
-#include "baseItem.h"
-#include <QPainter>
 
+#include "baseObject.h"
+
+class BaseItem;
 class Conveyer : public BaseObject
 {
     Q_OBJECT

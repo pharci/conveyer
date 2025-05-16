@@ -1,11 +1,9 @@
 #pragma once
-#include <QWidget>
-#include <QAbstractButton>
-#include <QLabel>
-#include "scene.h"
-#include "context.h"
-#include <QPushButton>
 
+#include <QWidget>
+
+class BaseObject;
+class Context;
 class RSidebar : public QWidget
 {
 	Q_OBJECT
@@ -19,8 +17,10 @@ private:
     QLabel* objectNameLabel;
 	QLabel* selectedCountLabel;
 	QPushButton* deleteBtn;
-	void onBtnDeleteClicked();
 	void turnObject();
 public slots:
     void updateSelectedObject(BaseObject *obj);
+	void updateSelectedCount(int count);
+signals:
+	void onBtnDeleteClicked();
 };

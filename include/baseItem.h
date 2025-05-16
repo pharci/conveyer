@@ -2,8 +2,6 @@
 
 #include <QGraphicsObject>
 
-class Conveyer;
-
 class BaseItem : public QGraphicsObject
 {
     Q_OBJECT

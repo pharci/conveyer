@@ -17,7 +17,7 @@ file(GLOB LIB_FILES "lib/*.hpp")
 
 
 if(WIN32)
-    # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mwindows")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mwindows")
     set(APP_ICON_RESOURCE_WINDOWS "${CMAKE_CURRENT_SOURCE_DIR}/res/application.rc")
 endif()
 
@@ -33,6 +33,8 @@ qt_add_resources(${PROJECT_NAME} "resources"
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE include lib)
+
+target_precompile_headers(conveyer PRIVATE include/pch.h)
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets

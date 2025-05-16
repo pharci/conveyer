@@ -1,10 +1,10 @@
+#include "pch.h"
+
 #include "scene.h"
 #include "receiver.h"
 #include "generator.h"
 #include "conveyer.h"
-#include <QGraphicsView>
-#include <QMessageBox>
-#include <QTimer>
+#include "context.h"
 
 Scene::Scene(Context* context, QGraphicsScene *parent) : QGraphicsScene(parent), context(context)
 {
@@ -15,6 +15,10 @@ Scene::Scene(Context* context, QGraphicsScene *parent) : QGraphicsScene(parent),
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &Scene::onTick);
     timer->start(16);
+
+    connect(this, &QGraphicsScene::selectionChanged, this, [this]() {
+        emit selectionCountChanged(selectedItems().size());
+    });
 }
 
 Scene::~Scene() {}
@@ -45,17 +49,15 @@ void Scene::drawBackground(QPainter *painter, const QRectF &rect) {
 
 void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     if (event->button() == Qt::LeftButton) {
-        QPointF pos = event->scenePos();
-        double x = std::floor(pos.x() / gridSize) * gridSize;
-        double y = std::floor(pos.y() / gridSize) * gridSize;
-        QPointF location = QPointF(x, y);
-
         if (context->getCurrentObjectType() != ObjectType::None) {
-            auto *obj = context->createCurrentObject();
-            obj->setPos(location);
-    
-            if (checkLegal(obj->sceneBoundingRect())) {
+            QPointF pos = event->scenePos();
+            double x = std::floor(pos.x() / gridSize) * gridSize;
+            double y = std::floor(pos.y() / gridSize) * gridSize;    
+            if (checkLegal(QPointF(x, y))) {
+                auto *obj = context->createCurrentObject();
+                obj->setPos(QPointF(x, y));
                 connect(obj, &BaseObject::clicked, this, &Scene::onObjectClicked);
+                obj->setFlags(QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemIsMovable); //
                 addItem(obj);
                 updateHoverRect(pos);
 
@@ -71,45 +73,29 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 }
 
 void Scene::onObjectClicked(BaseObject *obj) {
-    if (!obj->isHighlighted()) {
-        obj->setHighlighted(true);
-        context->addSelected(obj);
-    } else {
-        obj->setHighlighted(false);
-        context->removeSelected(obj);
-    }
-    emit objectSelected(obj);
+    emit objectClicked(obj);
     update();
 }
 
-void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
-{
-    QPointF pos = event->scenePos();
-    updateHoverRect(pos);
+
+void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
+    updateHoverRect(event->scenePos());
     QGraphicsScene::mouseMoveEvent(event);
 }
 
-
 void Scene::updateHoverRect(QPointF pos) {
-    double x = std::floor(pos.x() / gridSize) * gridSize;
-    double y = std::floor(pos.y() / gridSize) * gridSize;
-
+    qreal x = std::floor(pos.x() / gridSize) * gridSize;
+    qreal y = std::floor(pos.y() / gridSize) * gridSize;
     hoverRect->setRect(x, y, gridSize, gridSize);
-
-    if (checkLegal(hoverRect->sceneBoundingRect().adjusted(+0.5, +0.5, -0.5, -0.5))) {
-        hoverRect->setPen(QPen(Qt::green));
-    } else {
-        hoverRect->setPen(QPen(Qt::red));
-    }
+    if (checkLegal(QPointF(x, y))) { hoverRect->setPen(QPen(Qt::green)); } 
+    else { hoverRect->setPen(QPen(Qt::red)); }
     hoverRect->setVisible(true);
 }
 
-bool Scene::checkLegal(QRectF rect) {
+bool Scene::checkLegal(QPointF pos) {
     for (QGraphicsItem *item : this->items()) {
-        if (auto *base = dynamic_cast<BaseObject *>(item)) {
-            if (item->sceneBoundingRect().intersects(rect)) {
-                return false;
-            }
+        if (item->pos() == pos) {
+            return false;
         }
     }
     return true;
@@ -136,4 +122,29 @@ QList<BaseObject*> Scene::findNeighbors(BaseObject* objCenter) {
         }
     }
     return neighbors;
+}
+
+
+
+void Scene::deleteObjects() {
+    for (auto* item : selectedItems()) {
+        BaseObject* obj = dynamic_cast<BaseObject*>(item);
+        
+        QList<BaseObject*> neighbors = findNeighbors(obj);
+        for (auto neighbor : neighbors) {
+            if (auto* conv = qobject_cast<Conveyer*>(neighbor)) {
+                if (conv->getNext() == obj) conv->setNext(nullptr);
+                if (conv->getPrev() == obj) conv->setPrev(nullptr);
+            }
+            if (auto* gen = qobject_cast<Generator*>(neighbor)) {
+                if (gen->getRelated() == obj) gen->setRelated(nullptr);
+            }
+            if (auto* recv = qobject_cast<Receiver*>(neighbor)) {
+                if (recv->getRelated() == obj) recv->setRelated(nullptr);
+            }
+        }
+
+        obj->deleteLater();
+        update();
+    }
 }

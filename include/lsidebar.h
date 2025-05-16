@@ -1,10 +1,9 @@
 #pragma once
+
 #include <QWidget>
-#include <QAbstractButton>
-#include "scene.h"
-#include "context.h"
 
-
+class QAbstractButton;
+class Context;
 class LSidebar : public QWidget
 {
 	Q_OBJECT

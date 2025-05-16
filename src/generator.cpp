@@ -1,7 +1,7 @@
+#include "pch.h"
 #include "generator.h"
-#include "receiver.h"
+#include "conveyer.h"
 #include "baseItem.h"
-#include "scene.h"
 
 Generator::Generator(QGraphicsObject *parent) : BaseObject(parent, ObjectType::Generator) {
     timer = new QTimer(this);
@@ -15,7 +15,7 @@ void Generator::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidg
     QRectF rect = boundingRect();
     if ( related != nullptr) { painter->setBrush(Qt::blue); } 
     else { painter->setBrush(Qt::red); }
-    if (highlighted) { painter->setPen(QPen(Qt::green, 3));}
+    if (isSelected()) { painter->setPen(QPen(Qt::green, 3));}
     painter->drawRect(rect);
 
     painter->setBrush(Qt::white);
@@ -50,12 +50,7 @@ void Generator::spawnItem() {
 
     Conveyer* conveyer = static_cast<Conveyer*>(related);
     auto* item = new BaseItem();
-
     item->setPos(conveyer->getStartPoint());
-
     conveyer->addItem(item);
-
-    auto* sc = dynamic_cast<Scene*>(scene());
     item->setParentItem(conveyer);
-    sc->update();
 }

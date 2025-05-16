@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "pusher.h"
 
 Pusher::Pusher(QGraphicsObject *parent) : BaseObject(parent, ObjectType::Pusher) {}
@@ -6,7 +7,7 @@ Pusher::~Pusher() {}
 
 void Pusher::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
     QRectF rect = boundingRect();
-    if (highlighted) { painter->setPen(QPen(Qt::green, 3)); }
+    if (isSelected()) { painter->setPen(QPen(Qt::green, 3)); }
     painter->drawRect(rect);
 
     QPen linePen(Qt::black, 2);

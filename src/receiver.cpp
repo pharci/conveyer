@@ -1,5 +1,6 @@
+#include "pch.h"
 #include "receiver.h"
-#include "generator.h"
+#include "conveyer.h"
 #include "scene.h"
 
 Receiver::Receiver(QGraphicsObject *parent) : BaseObject(parent, ObjectType::Receiver) {}
@@ -10,7 +11,7 @@ void Receiver::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
     QRectF rect = boundingRect();
     if (related != nullptr) { painter->setBrush(Qt::black); } 
     else { painter->setBrush(Qt::red); }
-    if (highlighted) { painter->setPen(QPen(Qt::green, 3)); }
+    if (isSelected()) { painter->setPen(QPen(Qt::green, 3)); }
     painter->drawRect(rect);
 
     painter->setBrush(Qt::green);
@@ -28,7 +29,7 @@ BaseObject* Receiver::getRelated() { return related; }
 
 void Receiver::connection(QList<BaseObject*> objects) {
     if (related) {
-        if (auto* conv = qobject_cast<Conveyer*>(related)) conv->setPrev(nullptr);
+        if (auto* conv = qobject_cast<Conveyer*>(related)) conv->setNext(nullptr);
         related = nullptr;
     }
 
@@ -43,9 +44,7 @@ void Receiver::connection(QList<BaseObject*> objects) {
     }
 }
 
-void Receiver::addItem(BaseItem* item) {
+void Receiver::acceptItem() {
     totalReceived++;
-
-    auto* sc = dynamic_cast<Scene*>(scene());
-    item->deleteLater();
+    scene()->update();
 }

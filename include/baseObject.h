@@ -1,33 +1,17 @@
 #pragma once
+
+#include "enums.h"
 #include <QGraphicsObject>
-#include <QGraphicsSceneMouseEvent>
-#include <QPoint>
-#include <QRectF>
 
-enum class Direction 
-{
-    Up,
-    Down,
-    Left,
-    Right,
-    None
-}; 
-
-enum class ObjectType
-{
-    None,
-    Generator,
-    Receiver,
-    Conveyer,
-    Pusher
-};
-
+class Scene;
 class BaseObject : public QGraphicsObject 
 {
     Q_OBJECT
 protected:
     ObjectType type;
-    bool highlighted = false;
+    int size = 100;
+    QPointF dragStartPos;
+    bool drugAndDrop = false;
 public:
     explicit BaseObject(
         QGraphicsObject *parent = nullptr, 
@@ -39,12 +23,14 @@ public:
 
     ObjectType getObjectType();
     QString getObjectName();
-    void setHighlighted(bool value);
-    bool isHighlighted();
-    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
 
     virtual void connection(QList<BaseObject*> objects) = 0;
 
+    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+    void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override;
+    Scene* getScene() const;
 signals:
     void clicked(BaseObject *self);
 };

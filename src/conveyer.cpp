@@ -1,8 +1,9 @@
+#include "pch.h"
+#include "scene.h"
 #include "conveyer.h"
 #include "generator.h"
 #include "receiver.h"
-#include "scene.h"
-#include <QDebug>
+#include "baseItem.h"
 
 Conveyer::Conveyer(QGraphicsObject *parent) : BaseObject(parent, ObjectType::Conveyer) {}
 
@@ -59,7 +60,7 @@ void Conveyer::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
     }
 
     //rect
-    if (highlighted) painter->setPen(QPen(Qt::green, 3));
+    if (isSelected()) painter->setPen(QPen(Qt::green, 3));
     else painter->setPen(QPen(Qt::black, 2));
     if (prev != nullptr && next != nullptr) painter->fillPath(path, Qt::gray);
     else painter->fillPath(path, Qt::red);
@@ -146,7 +147,7 @@ Direction Conveyer::getOutDir() { return outDir; }
 QPointF Conveyer::getStartPoint() { return startPoint; };
 
 void Conveyer::turn() {
-    if (!prev && !next || prev && next) {
+    if (!prev && !next) {
         rotationAngle = (rotationAngle + 90) % 360;
         inDir = angleOutDir(rotationAngle);
         outDir = angleInDir(rotationAngle);
@@ -154,7 +155,7 @@ void Conveyer::turn() {
         setRotation(rotationAngle);
         for (auto* item : items) { item->setRotation(rotationAngle); }
     }
-    else if (prev && !next) { 
+    else if (prev && !next || prev && next) { 
         rotationAngle = (rotationAngle + 90) % 360;
         if (angleInDir(rotationAngle) == inDir) rotationAngle = (rotationAngle + 90) % 360;
         outDir = angleInDir(rotationAngle); 
@@ -168,11 +169,10 @@ void Conveyer::turn() {
         inDir = angleOutDir(rotationAngle);
     }
 
-    if (auto* sc = dynamic_cast<Scene*>(scene())) {
-        QList<BaseObject*> neighbors = sc->findNeighbors(this);
-        this->connection(neighbors);
-        sc->update();
-    }
+    Scene* sc = getScene();
+    QList<BaseObject*> neighbors = sc->findNeighbors(this);
+    this->connection(neighbors);
+    sc->update();
 }
 
 Direction Conveyer::angleInDir(int angle) {
@@ -181,7 +181,7 @@ Direction Conveyer::angleInDir(int angle) {
         case 90:  return Direction::Down;
         case 180: return Direction::Left;
         case 270: return Direction::Up;
-        default:  return Direction::Right; // безопасное значение по умолчанию
+        default:  return Direction::Right;
     }
 }
 
@@ -191,7 +191,7 @@ Direction Conveyer::angleOutDir(int angle) {
         case 90:  return Direction::Up;
         case 180: return Direction::Right;
         case 270: return Direction::Down;
-        default:  return Direction::Right; // безопасное значение по умолчанию
+        default:  return Direction::Right;
     }
 }
 
@@ -212,9 +212,10 @@ void Conveyer::moveItems() {
                         items.removeOne(item);
                         itemProgress.remove(item);
                     } else if (auto* recv = qobject_cast<Receiver*>(next)) {
-                        recv->addItem(item);
+                        recv->acceptItem();
                         items.removeOne(item);
                         itemProgress.remove(item);
+                        item->deleteLater();
                     }
                     continue;
                 }
@@ -250,8 +251,9 @@ void Conveyer::moveItems() {
                         items.removeOne(item);
                     }
                     if (auto* recv = qobject_cast<Receiver*>(next)) {
-                        recv->addItem(item);
+                        recv->acceptItem();
                         items.removeOne(item);
+                        item->deleteLater();
                     }
                 }
 

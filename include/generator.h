@@ -1,8 +1,6 @@
 #pragma once
+
 #include "baseObject.h"
-#include "conveyer.h"
-#include <QPainter>
-#include <QTimer>
 
 class Generator : public BaseObject
 {

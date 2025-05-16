@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "baseItem.h"
 #include "conveyer.h"
 #include "receiver.h"

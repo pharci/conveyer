@@ -1,15 +1,13 @@
 #pragma once
+
 #include "baseObject.h"
-#include "conveyer.h"
-#include <QPainter>
 
 class Pusher : public BaseObject
 {
     Q_OBJECT
 private:
     double frequency;
-
-    Conveyer* related;
+    BaseObject* related;
 public:
     explicit Pusher(QGraphicsObject *parent = nullptr);
     virtual ~Pusher();

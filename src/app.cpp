@@ -28,6 +28,7 @@ App::App(QWidget *parent) : QMainWindow(parent)
     view->setRenderHint(QPainter::Antialiasing);
     view->setWindowTitle("Conveyer System");
     view->setMouseTracking(true);
+    view->setDragMode(QGraphicsView::RubberBandDrag);
     view->show();
 
     layout->addWidget(view);
@@ -37,7 +38,9 @@ App::App(QWidget *parent) : QMainWindow(parent)
     rsidebar->setFixedWidth(150);
     scene->setSceneRect(0, 0, 3000, 3000);
 
-    connect(scene, &Scene::objectSelected, rsidebar, &RSidebar::updateSelectedObject);
+    connect(scene, &Scene::objectClicked, rsidebar, &RSidebar::updateSelectedObject);
+    connect(scene, &Scene::selectionCountChanged, rsidebar, &RSidebar::updateSelectedCount);
+    connect(rsidebar, &RSidebar::onBtnDeleteClicked, scene, &Scene::deleteObjects);
 }
 
 App::~App() {}

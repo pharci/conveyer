@@ -1,8 +1,4 @@
-#include <QPainter>
-#include <QVBoxLayout>
-#include <QToolButton>
-#include <QButtonGroup>
-#include <QLabel>
+#include "pch.h"
 
 #include "lsidebar.h"
 #include "context.h"

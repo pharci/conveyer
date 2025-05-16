@@ -1,20 +1,16 @@
 #pragma once
-#include <QObject>
-#include <QVector>
-#include "baseObject.h"
 
+#include <QObject>
+
+#include "enums.h"
+
+class BaseObject;
 class Context : public QObject
 {
     Q_OBJECT
 public:
     explicit Context(QObject *parent = nullptr);
     ~Context();
-
-    void addSelected(BaseObject* obj);
-    void removeSelected(BaseObject* obj);
-    int getCountSelected();
-    QSet<BaseObject *>* getSelected();
-    void clearSelected();
 public slots:
     void setCurrentObjectType(int id);
     ObjectType getCurrentObjectType();
@@ -22,6 +18,4 @@ public slots:
 protected:
     ObjectType currentObjectType;
     QString objectTypeToString(ObjectType type);
-
-    QSet<BaseObject *> selectedObjects;
 };

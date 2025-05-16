@@ -1,9 +1,4 @@
-#include <QPainter>
-#include <QVBoxLayout>
-#include <QToolButton>
-#include <QButtonGroup>
-#include <QPushButton>
-#include <QLabel>
+#include "pch.h"
 
 #include "scene.h"
 #include "conveyer.h"
@@ -12,8 +7,7 @@
 #include "rsidebar.h"
 #include "context.h"
 
-RSidebar::RSidebar(Context *context, QWidget *parent)
-    : QWidget(parent), context(context)
+RSidebar::RSidebar(Context *context, QWidget *parent) : QWidget(parent), context(context)
 {
     QVBoxLayout *layout = new QVBoxLayout(this);
 
@@ -31,8 +25,9 @@ RSidebar::RSidebar(Context *context, QWidget *parent)
     layout->addWidget(selectedCountLabel);
     layout->addWidget(deleteBtn);
 
-    connect(deleteBtn, &QPushButton::clicked, this, &RSidebar::onBtnDeleteClicked);
-
+    connect(deleteBtn, &QPushButton::clicked, this, [this]() {
+        emit onBtnDeleteClicked();
+    });
 }
 
 RSidebar::~RSidebar() {}
@@ -54,36 +49,14 @@ void RSidebar::turnObject() {
 
 void RSidebar::updateSelectedObject(BaseObject *obj) {
     objectSelected = obj;
-    selectedCountLabel->setText("Выбрано: " + QString::number(context->getCountSelected()));
+    
     if (obj == nullptr) {
-        objectNameLabel->setText("Не выбрано");
+        objectNameLabel->setText("Объект не выбран");
         return;
     }
     objectNameLabel->setText(obj->getObjectName());
 }
 
-void RSidebar::onBtnDeleteClicked() {
-    for (BaseObject* obj : *context->getSelected()) {
-        auto* sc = dynamic_cast<Scene*>(obj->scene());
-        QList<BaseObject*> neighbors = sc->findNeighbors(obj);
-
-        for (auto neighbor : neighbors) {
-            if (auto* conv = qobject_cast<Conveyer*>(neighbor)) {
-                if (conv->getNext() == obj) conv->setNext(nullptr);
-                if (conv->getPrev() == obj) conv->setPrev(nullptr);
-            }
-            if (auto* gen = qobject_cast<Generator*>(neighbor)) {
-                if (gen->getRelated() == obj) gen->setRelated(nullptr);
-            }
-            if (auto* recv = qobject_cast<Receiver*>(neighbor)) {
-                if (recv->getRelated() == obj) recv->setRelated(nullptr);
-            }
-        }
-
-        obj->deleteLater();
-        sc->update();
-    }
-
-    context->clearSelected();
-    updateSelectedObject(nullptr);
+void RSidebar::updateSelectedCount(int count) {
+    selectedCountLabel->setText("Выбрано: " + QString::number(count));
 }
