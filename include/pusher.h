@@ -13,4 +13,5 @@ public:
     virtual ~Pusher();
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override;
     void connection(QList<BaseObject*> objects) override;
+    QWidget* createPropertiesWidget(QWidget* parent) override;
 };

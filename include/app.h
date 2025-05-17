@@ -1,11 +1,12 @@
 #pragma once
 
 #include <QtWidgets/QMainWindow>
-#include "lsidebar.h"
-#include "rsidebar.h"
-#include "context.h"
-#include "scene.h"
 
+class Context;
+class Scene;
+class RSidebar;
+class LSidebar;
+class View;
 class App : public QMainWindow
 {
     Q_OBJECT
@@ -15,5 +16,6 @@ public:
     Scene *scene;
     RSidebar *rsidebar;
     Context *context;
+    View *view;
     ~App();
 };

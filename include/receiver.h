@@ -17,4 +17,5 @@ public:
     BaseObject* getRelated();
     void connection(QList<BaseObject*> objects) override;
     void acceptItem();
+    QWidget* createPropertiesWidget(QWidget* parent) override;
 };

@@ -16,25 +16,3 @@ void Context::setCurrentObjectType(int id) {
 }
 
 ObjectType Context::getCurrentObjectType() { return currentObjectType; }
-
-QString Context::objectTypeToString(ObjectType type) {
-    switch (type) {
-        case ObjectType::Generator: return "Generator";
-        case ObjectType::Receiver: return "Receiver";
-        case ObjectType::Conveyer: return "Conveyer";
-        case ObjectType::Pusher: return "Pusher";
-        case ObjectType::None: return "None";
-        default: return "Unknown";
-    }
-}
-
-BaseObject* Context::createCurrentObject() {
-    switch (currentObjectType) {
-        case ObjectType::Generator: return new Generator;
-        case ObjectType::Receiver: return new Receiver;
-        case ObjectType::Conveyer: return new Conveyer;
-        case ObjectType::Pusher: return new Pusher;
-        case ObjectType::None: return nullptr;
-        default: return nullptr;
-    }
-}

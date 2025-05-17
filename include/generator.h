@@ -6,7 +6,7 @@ class Generator : public BaseObject
 {
     Q_OBJECT
 private:
-    double frequency;
+    qreal frequency = 1000;
     QTimer* timer = nullptr;
     BaseObject* related = nullptr;
 public:
@@ -17,4 +17,7 @@ public:
     BaseObject* getRelated();
     void connection(QList<BaseObject*> objects) override;
     void spawnItem();
+    QWidget* createPropertiesWidget(QWidget* parent) override;
+    void start();
+    void stop();
 };

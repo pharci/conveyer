@@ -14,8 +14,6 @@ public:
 public slots:
     void setCurrentObjectType(int id);
     ObjectType getCurrentObjectType();
-    BaseObject* createCurrentObject();
 protected:
     ObjectType currentObjectType;
-    QString objectTypeToString(ObjectType type);
 };

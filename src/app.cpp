@@ -1,11 +1,11 @@
-#include "app.h"
-#include "scene.h"
-#include "lsidebar.h"
-#include "context.h"
+#include "pch.h"
 
-#include <QHBoxLayout>
-#include <QWidget>
-#include <QGraphicsView>
+#include "app.h"
+#include "lsidebar.h"
+#include "rsidebar.h"
+#include "context.h"
+#include "scene.h"
+#include "view.h"
 
 App::App(QWidget *parent) : QMainWindow(parent)
 {
@@ -24,11 +24,8 @@ App::App(QWidget *parent) : QMainWindow(parent)
 
     layout->addWidget(lsidebar);
 
-    QGraphicsView *view = new QGraphicsView(scene);
-    view->setRenderHint(QPainter::Antialiasing);
-    view->setWindowTitle("Conveyer System");
-    view->setMouseTracking(true);
-    view->setDragMode(QGraphicsView::RubberBandDrag);
+    view = new View;
+    view->setScene(scene);
     view->show();
 
     layout->addWidget(view);
@@ -36,11 +33,9 @@ App::App(QWidget *parent) : QMainWindow(parent)
 
     lsidebar->setFixedWidth(150);
     rsidebar->setFixedWidth(150);
-    scene->setSceneRect(0, 0, 3000, 3000);
 
-    connect(scene, &Scene::objectClicked, rsidebar, &RSidebar::updateSelectedObject);
-    connect(scene, &Scene::selectionCountChanged, rsidebar, &RSidebar::updateSelectedCount);
-    connect(rsidebar, &RSidebar::onBtnDeleteClicked, scene, &Scene::deleteObjects);
+    connect(scene, &Scene::showObjectProperties, rsidebar, &RSidebar::updateObjectProperties);
+    connect(rsidebar, &RSidebar::onBtnDeleteClicked, scene, &Scene::deleteSelectedObjects);
 }
 
 App::~App() {}

@@ -9,16 +9,25 @@ Conveyer::Conveyer(QGraphicsObject *parent) : BaseObject(parent, ObjectType::Con
 
 Conveyer::~Conveyer() {}
 
-QDebug operator<<(QDebug debug, const Direction& dir) {
-    switch (dir) {
-        case Direction::Left:  return debug << "Left";
-        case Direction::Right: return debug << "Right";
-        case Direction::Up:    return debug << "Up";
-        case Direction::Down:  return debug << "Down";
-        case Direction::None:  return debug << "None";
-    }
-    return debug << "Unknown";
-}
+void Conveyer::setNext(BaseObject* obj) { next = obj; }
+void Conveyer::setPrev(BaseObject* obj) { prev = obj; }
+BaseObject* Conveyer::getNext() { return next; }
+BaseObject* Conveyer::getPrev() { return prev; }
+void Conveyer::addItem(BaseItem* item) { items.push_back(item); }
+QList<BaseItem*> Conveyer::getItems() { return items; }
+double Conveyer::getSpeed() { return speed; }
+Direction Conveyer::getInDir() { return inDir; }
+Direction Conveyer::getOutDir() { return outDir; }
+
+QPointF Conveyer::getStartPoint() { 
+    return mapToScene(startPoint); 
+};
+QPointF Conveyer::getEndPoint() { 
+    return mapToScene(endPoint); 
+};
+QPointF Conveyer::getCenterPoint() { 
+    return mapToScene(centerPoint); 
+};
 
 void Conveyer::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
     prepareGeometryChange();
@@ -27,16 +36,18 @@ void Conveyer::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
     QPainterPath path;
 
     startPoint = QPointF();
-    endPoint = QPointF(r.right() - t, r.center().y());
+    endPoint = QPointF(r.right(), r.center().y());
+
+    qreal pW = 3.0;
 
     if (inDir == Direction::Left && outDir == Direction::Down || 
         inDir == Direction::Right && outDir == Direction::Up ||
         inDir == Direction::Up && outDir == Direction::Left ||
         inDir == Direction::Down && outDir == Direction::Right) {
-        path.addRect(QRectF(t, t, r.width() - 2*t, r.height() - t));
-        path.addRect(QRectF(r.width() - t, t, t, r.height() - 2*t));
+        path.addRect(QRectF(t, t, r.width() - 2*t, r.height() - t).adjusted(pW, pW, -pW, -pW));
+        path.addRect(QRectF(r.width() - t - pW, t, t + pW, r.height() - 2*t).adjusted(0, pW, -pW, -pW));
         startPoint.setX(r.center().x());
-        startPoint.setY(r.bottom());
+        startPoint.setY(r.bottom() - t);
         centerPoint = QPoint(r.right(), r.bottom());
         isCorner = true;
     } 
@@ -45,37 +56,41 @@ void Conveyer::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
         inDir == Direction::Right && outDir == Direction::Down ||
         inDir == Direction::Up && outDir == Direction::Right ||
         inDir == Direction::Down && outDir == Direction::Left) {
-        path.addRect(QRectF(t, 0, r.width() - 2*t, r.height() - t));
-        path.addRect(QRectF(r.width() - t, t, t, r.height() - 2*t));
+        path.addRect(QRectF(t, 0, r.width() - 2*t, r.height() - t).adjusted(pW, pW, -pW, -pW));
+        path.addRect(QRectF(r.width() - t - pW, t, t + pW, r.height() - 2*t).adjusted(0, pW, -pW, -pW));
         startPoint.setX(r.center().x());
-        startPoint.setY(r.top());
+        startPoint.setY(r.top() + t);
         centerPoint = QPoint(r.right(), r.top());
         isCorner = true;
     }
     else {
-        path.addRect(QRect(0, t, r.width(), r.height() - 2*t));
-        startPoint.setX(r.left());
+        path.addRect(QRect(0, t, r.width(), r.height() - 2*t).adjusted(pW, pW, -pW, -pW));
+        startPoint.setX(r.left() + t);
         startPoint.setY(r.center().y());
         isCorner = false;
     }
 
-    //rect
-    if (isSelected()) painter->setPen(QPen(Qt::green, 3));
-    else painter->setPen(QPen(Qt::black, 2));
+    painter->setPen(QPen(isSelected() ? Qt::green : Qt::black, pW + 1));
     if (prev != nullptr && next != nullptr) painter->fillPath(path, Qt::gray);
     else painter->fillPath(path, Qt::red);
     painter->drawPath(path.simplified());
 
     //arrow
-    painter->setPen(QPen(Qt::white, 2));
+    painter->setPen(QPen(Qt::white, 5));
     QPainterPath arrowPath;
     arrowPath.moveTo(startPoint);
     arrowPath.lineTo(r.center());
-    arrowPath.lineTo(endPoint);
-    arrowPath.lineTo(endPoint + QPointF(-t, -t));
-    arrowPath.moveTo(endPoint);
-    arrowPath.lineTo(endPoint + QPointF(-t, t));
+    arrowPath.lineTo(endPoint + QPointF(-t, 0));
+    arrowPath.lineTo(endPoint + QPointF(-2 * t, -t));
+    arrowPath.moveTo(endPoint + QPointF(-t, 0));
+    arrowPath.lineTo(endPoint + QPointF(-2 *t, t));
     painter->drawPath(arrowPath);
+}
+
+void Conveyer::clearItems() {
+    for (auto *item : items)
+    item->deleteLater();
+    items.clear();
 }
 
 Direction Conveyer::getDirectionTo(const QPointF& from, const QPointF& to) {
@@ -91,12 +106,15 @@ Direction Conveyer::getDirectionTo(const QPointF& from, const QPointF& to) {
 void Conveyer::connection(QList<BaseObject*> objects) {
     if (next) {
         if (auto* conv = qobject_cast<Conveyer*>(next)) conv->setPrev(nullptr);
-        if (auto* conv = qobject_cast<Receiver*>(next)) conv->setRelated(nullptr);
+        if (auto* recv = qobject_cast<Receiver*>(next)) recv->setRelated(nullptr);
         next = nullptr;
     }
     if (prev) {
         if (auto* conv = qobject_cast<Conveyer*>(prev)) conv->setNext(nullptr);
-        if (auto* conv = qobject_cast<Generator*>(prev)) conv->setRelated(nullptr);
+        if (auto* gen = qobject_cast<Generator*>(prev)) {
+            gen->setRelated(nullptr);
+            gen->stop();
+        }
         prev = nullptr;
     }
 
@@ -104,18 +122,13 @@ void Conveyer::connection(QList<BaseObject*> objects) {
         Direction dirToNeighbor = getDirectionTo(this->pos(), neighbor->pos());
         Direction dirFromNeighbor = getDirectionTo(neighbor->pos(), this->pos());
         if (auto* conv = qobject_cast<Conveyer*>(neighbor)) {
-            qDebug() << "dirToNeighbor:" << dirToNeighbor << "dirFromNeighbor:" << dirFromNeighbor;
-            qDebug() << "inDir:" << inDir << "outDir:" << outDir;
-            qDebug() << "conv->inDir:" << conv->inDir << "conv->outDir:" << conv->outDir;
             if (inDir == dirToNeighbor && conv->outDir == dirFromNeighbor) {
                 setPrev(conv);
                 conv->setNext(this);
-                qDebug() << "\nConnect prev!\n";
             }
             else if (outDir == dirToNeighbor && conv->inDir == dirFromNeighbor) {
                 setNext(conv);
                 conv->setPrev(this);
-                qDebug() << "\nConnect next!\n";
             }
         }
 
@@ -123,6 +136,7 @@ void Conveyer::connection(QList<BaseObject*> objects) {
             if (inDir == dirToNeighbor && !gen->getRelated()) {
                 setPrev(gen);
                 gen->setRelated(this);
+                gen->start();
             }
         }
 
@@ -132,41 +146,33 @@ void Conveyer::connection(QList<BaseObject*> objects) {
                 recv->setRelated(this);
             }
         }
-    }
-}
 
-void Conveyer::setNext(BaseObject* obj) { next = obj; }
-void Conveyer::setPrev(BaseObject* obj) { prev = obj; }
-BaseObject* Conveyer::getNext() { return next; }
-BaseObject* Conveyer::getPrev() { return prev; }
-void Conveyer::addItem(BaseItem* item) { items.push_back(item); }
-QList<BaseItem*> Conveyer::getItems() { return items; }
-double Conveyer::getSpeed() { return speed; }
-Direction Conveyer::getInDir() { return inDir; }
-Direction Conveyer::getOutDir() { return outDir; }
-QPointF Conveyer::getStartPoint() { return startPoint; };
+    }
+
+    scene()->update();
+}
 
 void Conveyer::turn() {
     if (!prev && !next) {
         rotationAngle = (rotationAngle + 90) % 360;
-        inDir = angleOutDir(rotationAngle);
-        outDir = angleInDir(rotationAngle);
+        inDir = angleInDir(rotationAngle);
+        outDir = angleOutDir(rotationAngle);
         setTransformOriginPoint(boundingRect().center());
         setRotation(rotationAngle);
         for (auto* item : items) { item->setRotation(rotationAngle); }
     }
     else if (prev && !next || prev && next) { 
         rotationAngle = (rotationAngle + 90) % 360;
-        if (angleInDir(rotationAngle) == inDir) rotationAngle = (rotationAngle + 90) % 360;
-        outDir = angleInDir(rotationAngle); 
+        if (angleOutDir(rotationAngle) == inDir) rotationAngle = (rotationAngle + 90) % 360;
+        outDir = angleOutDir(rotationAngle); 
         setTransformOriginPoint(boundingRect().center());
         setRotation(rotationAngle);
         for (auto* item : items) { item->setRotation(rotationAngle); }
     }
     else if (next && !prev) { 
         rotationAngle = (rotationAngle + 90) % 360;
-        if (angleOutDir(rotationAngle) == outDir) rotationAngle = (rotationAngle + 90) % 360;
-        inDir = angleOutDir(rotationAngle);
+        if (angleInDir(rotationAngle) == outDir) rotationAngle = (rotationAngle + 90) % 360;
+        inDir = angleInDir(rotationAngle);
     }
 
     Scene* sc = getScene();
@@ -175,7 +181,7 @@ void Conveyer::turn() {
     sc->update();
 }
 
-Direction Conveyer::angleInDir(int angle) {
+Direction Conveyer::angleOutDir(int angle) {
     switch (angle % 360) {
         case 0:   return Direction::Right;
         case 90:  return Direction::Down;
@@ -185,7 +191,7 @@ Direction Conveyer::angleInDir(int angle) {
     }
 }
 
-Direction Conveyer::angleOutDir(int angle) {
+Direction Conveyer::angleInDir(int angle) {
     switch (angle % 360) {
         case 0:   return Direction::Left;
         case 90:  return Direction::Up;
@@ -207,8 +213,6 @@ void Conveyer::moveItems() {
                 if (t >= 1.0) {
                     if (auto* conv = qobject_cast<Conveyer*>(next)) {
                         conv->addItem(item);
-                        item->setParentItem(conv);
-                        item->setPos(conv->startPoint);
                         items.removeOne(item);
                         itemProgress.remove(item);
                     } else if (auto* recv = qobject_cast<Receiver*>(next)) {
@@ -220,34 +224,35 @@ void Conveyer::moveItems() {
                     continue;
                 }
 
-                // Движение по дуге
-                qreal radius = QLineF(centerPoint, startPoint).length();
-
-                qreal angleStart = std::atan2(startPoint.y() - centerPoint.y(), startPoint.x() - centerPoint.x());
-                qreal angleEnd   = std::atan2(endPoint.y() - centerPoint.y(), endPoint.x() - centerPoint.x());
-
-                // корректировка угла, чтобы не было отрицательного направления
+                qreal radius = QLineF(getCenterPoint(), item->pos()).length();
+                qreal angleStart = std::atan2(getStartPoint().y() - getCenterPoint().y(), getStartPoint().x() - getCenterPoint().x());
+                qreal angleEnd   = std::atan2(getEndPoint().y() - getCenterPoint().y(), getEndPoint().x() - getCenterPoint().x());
                 qreal deltaAngle = angleEnd - angleStart;
-                if (deltaAngle < -M_PI) deltaAngle += 2 * M_PI;
-                if (deltaAngle > M_PI)  deltaAngle -= 2 * M_PI;
-
                 qreal angle = angleStart + t * deltaAngle;
 
                 QPointF pos = QPointF(
-                    centerPoint.x() + radius * std::cos(angle),
-                    centerPoint.y() + radius * std::sin(angle)
+                    getCenterPoint().x() + radius * std::cos(angle),
+                    getCenterPoint().y() + radius * std::sin(angle)
                 );
                 item->setPos(pos);
             }
             else {
-                if (item->pos().x() - boundingRect().x() < boundingRect().width()) {
-                    item->moveBy(speed, 0);
+                QPointF dir = getEndPoint() - getStartPoint();
+                QPointF vecToItem = item->pos() - getStartPoint();
+                qreal dot = QPointF::dotProduct(vecToItem, dir);
+                qreal len2 = QPointF::dotProduct(dir, dir);
+                if (dot < len2) {
+                    switch (angleOutDir(rotationAngle)) {
+                        case Direction::Left:  item->moveBy(-speed, 0); break;
+                        case Direction::Right: item->moveBy(speed, 0);  break;
+                        case Direction::Up:    item->moveBy(0, -speed); break;
+                        case Direction::Down:  item->moveBy(0, speed);  break;
+                        default: break;
+                    }
                 }
                 else { 
                     if (auto* conv = qobject_cast<Conveyer*>(next)) {
                         conv->addItem(item);
-                        item->setParentItem(conv);
-                        item->setPos(conv->startPoint);
                         items.removeOne(item);
                     }
                     if (auto* recv = qobject_cast<Receiver*>(next)) {
@@ -260,4 +265,45 @@ void Conveyer::moveItems() {
             }
         }
     }
+}
+
+
+QWidget* Conveyer::createPropertiesWidget(QWidget* parent) {
+    QWidget* container = new QWidget(parent);
+    QVBoxLayout* layout = new QVBoxLayout(container);
+
+    QLabel *nameLabel = new QLabel("Конвейер", container);
+    layout->addWidget(nameLabel);
+
+    QLabel* speedLabel = new QLabel("Скорость: ", container);
+    QSpinBox* speedSpin = new QSpinBox(container);
+    speedSpin->setRange(1, 10);
+    speedSpin->setValue(speed);
+    layout->addWidget(speedLabel);
+    layout->addWidget(speedSpin);
+    connect(speedSpin, QOverload<int>::of(&QSpinBox::valueChanged), this, [=](int value) {
+        speed = value;
+    });
+
+    QLabel* label = new QLabel("Действия: ", container);
+    layout->addWidget(label);
+
+    QPushButton *orientationBtn = new QPushButton("Повернуть", container);
+    connect(orientationBtn, &QPushButton::clicked, this, &Conveyer::turn);
+    layout->addWidget(orientationBtn);
+
+    QPushButton *clearBtn = new QPushButton("Очистить", container);
+    connect(clearBtn, &QPushButton::clicked, this, &Conveyer::clearItems);
+    layout->addWidget(clearBtn);
+
+    layout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding));
+
+    QPushButton *deleteBtn = new QPushButton("Удалить", container);
+    layout->addWidget(deleteBtn);
+    connect(deleteBtn, &QPushButton::clicked, this, [this]() {
+        getScene()->deleteObject(this);
+    });
+
+    container->setLayout(layout);
+    return container;
 }

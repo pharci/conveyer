@@ -3,7 +3,9 @@
 #include "scene.h"
 #include "conveyer.h"
 
-BaseObject::BaseObject(QGraphicsObject *parent, ObjectType type) : QGraphicsObject(parent), type(type) {}
+BaseObject::BaseObject(QGraphicsObject *parent, ObjectType type) : QGraphicsObject(parent), type(type) {
+    setFlags(QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemIsMovable);
+}
 
 BaseObject::~BaseObject() {}
 
@@ -32,7 +34,10 @@ ObjectType BaseObject::getObjectType() {
 
 void BaseObject::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     if (event->button() == Qt::LeftButton) {
-        dragStartPos = pos();
+        isDragging = false;
+        int x = std::round(pos().x() / size) * size;
+        int y = std::round(pos().y() / size) * size;    
+        dragStartPos = QPointF(x, y);
         event->accept();
         return;
     }
@@ -40,11 +45,12 @@ void BaseObject::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 
 void BaseObject::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     if (event->buttons() & Qt::LeftButton) {
-        drugAndDrop = true;
+        isDragging = true;
         setZValue(10);
         QPointF newScenePos = event->scenePos();
         QPointF delta = newScenePos - event->buttonDownScenePos(Qt::LeftButton);
         setPos(dragStartPos + delta);
+
         event->accept();
         return;
     }
@@ -54,21 +60,24 @@ void BaseObject::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
     if (event->button() == Qt::LeftButton) {
         Scene* sc = getScene();
 
-        if (drugAndDrop) {
-            QPointF pos = event->scenePos();
-            qreal x = std::floor(pos.x() / size) * size;
-            qreal y = std::floor(pos.y() / size) * size;    
+        if (isDragging) {
+            QPointF finalPos = sc->snapToGrid(event->scenePos());
+            if (!sc->checkLegal(finalPos)) finalPos = sc->snapToGrid(dragStartPos);
 
-            if (sc->checkLegal(QPointF(x, y))) { setPos(QPointF(x, y));} 
-            else {
-                qreal x = std::floor(dragStartPos.x() / size) * size;
-                qreal y = std::floor(dragStartPos.y() / size) * size;      
-                setPos(QPointF(x, y));
+            QPropertyAnimation* animation = new QPropertyAnimation(this, "pos");
+            animation->setDuration(200);
+            animation->setEasingCurve(QEasingCurve::OutCubic);
+            animation->setStartValue(this->pos());
+            animation->setEndValue(finalPos);
+            animation->start(QAbstractAnimation::DeleteWhenStopped);
+
+            if (dragStartPos != finalPos) {
+                connect(animation, &QPropertyAnimation::finished, this, [this, sc]() {
+                    connection(sc->findNeighbors(this));
+                });
             }
-
-            drugAndDrop = false;
+            isDragging = false;
             setZValue(0);
-            connection(sc->findNeighbors(this));
         }
 
         if (event->modifiers() & Qt::ControlModifier) {
@@ -81,14 +90,8 @@ void BaseObject::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
         }
 
         emit clicked(this);
+        scene()->update();
         event->accept();
         return;
     }
-}
-
-void BaseObject::hoverLeaveEvent(QGraphicsSceneHoverEvent* event) {
-    qreal x = std::floor(dragStartPos.x() / size) * size;
-    qreal y = std::floor(dragStartPos.y() / size) * size;      
-    setPos(QPointF(x, y));
-    QGraphicsObject::hoverLeaveEvent(event);
 }

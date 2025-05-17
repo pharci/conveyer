@@ -10,24 +10,16 @@
 RSidebar::RSidebar(Context *context, QWidget *parent) : QWidget(parent), context(context)
 {
     QVBoxLayout *layout = new QVBoxLayout(this);
+    layout->setContentsMargins(0, 0, 0, 0);
 
-    objectNameLabel = new QLabel("Объект не выбран", this);
-    layout->addWidget(objectNameLabel);
+    // selectedCountLabel = new QLabel("", this);
+    // deleteBtn = new QPushButton("Delete", this);
+    // layout->addWidget(selectedCountLabel);
+    // layout->addWidget(deleteBtn);
 
-    QPushButton *orientationBtn = new QPushButton("Повернуть", this);
-    connect(orientationBtn, &QPushButton::clicked, this, &RSidebar::turnObject);
-    layout->addWidget(orientationBtn);
-
-    layout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding));
-
-    selectedCountLabel = new QLabel("", this);
-    deleteBtn = new QPushButton("Delete", this);
-    layout->addWidget(selectedCountLabel);
-    layout->addWidget(deleteBtn);
-
-    connect(deleteBtn, &QPushButton::clicked, this, [this]() {
-        emit onBtnDeleteClicked();
-    });
+    // connect(deleteBtn, &QPushButton::clicked, this, [this]() {
+    //     emit onBtnDeleteClicked();
+    // });
 }
 
 RSidebar::~RSidebar() {}
@@ -42,21 +34,16 @@ void RSidebar::paintEvent(QPaintEvent *event)
     painter.drawLine(0, 0, 0, height());
 }
 
-void RSidebar::turnObject() {
-    if (auto* conv = qobject_cast<Conveyer*>(objectSelected))
-        conv->turn();
-}
-
-void RSidebar::updateSelectedObject(BaseObject *obj) {
-    objectSelected = obj;
-    
-    if (obj == nullptr) {
-        objectNameLabel->setText("Объект не выбран");
-        return;
+void RSidebar::updateObjectProperties(BaseObject *obj) {
+    if (widgetProperties) {
+        layout()->removeWidget(widgetProperties);
+        widgetProperties->setParent(nullptr); 
+        widgetProperties->deleteLater();
+        widgetProperties = nullptr; 
     }
-    objectNameLabel->setText(obj->getObjectName());
-}
 
-void RSidebar::updateSelectedCount(int count) {
-    selectedCountLabel->setText("Выбрано: " + QString::number(count));
+    if (obj) {
+        widgetProperties = obj->createPropertiesWidget(this);
+        layout()->addWidget(widgetProperties);
+    }
 }

@@ -11,7 +11,7 @@ protected:
     ObjectType type;
     int size = 100;
     QPointF dragStartPos;
-    bool drugAndDrop = false;
+    bool isDragging = false;
 public:
     explicit BaseObject(
         QGraphicsObject *parent = nullptr, 
@@ -20,17 +20,15 @@ public:
     virtual ~BaseObject();
     QRectF boundingRect() const override;
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override = 0;
-
-    ObjectType getObjectType();
-    QString getObjectName();
-
-    virtual void connection(QList<BaseObject*> objects) = 0;
-
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
-    void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override;
+
+    ObjectType getObjectType();
+    QString getObjectName();
     Scene* getScene() const;
+    virtual void connection(QList<BaseObject*> objects) = 0;
+    virtual QWidget* createPropertiesWidget(QWidget* parent) = 0;
 signals:
     void clicked(BaseObject *self);
 };

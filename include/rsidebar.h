@@ -12,15 +12,10 @@ public:
 	~RSidebar();
 private:
 	Context *context;
-    BaseObject* objectSelected = nullptr;
+	QWidget *widgetProperties;
 	void paintEvent(QPaintEvent *event) override;
-    QLabel* objectNameLabel;
-	QLabel* selectedCountLabel;
-	QPushButton* deleteBtn;
-	void turnObject();
 public slots:
-    void updateSelectedObject(BaseObject *obj);
-	void updateSelectedCount(int count);
+    void updateObjectProperties(BaseObject *obj);
 signals:
 	void onBtnDeleteClicked();
 };

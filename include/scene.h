@@ -7,28 +7,30 @@ class BaseObject;
 class Scene : public QGraphicsScene
 {
     Q_OBJECT
-public:
-    explicit Scene(Context* context, QGraphicsScene *parent = nullptr);
-    ~Scene();
-    QVector<BaseObject*> findNeighbors(BaseObject* objCenter);
-    int getGridSize() const;
-    bool checkLegal(QPointF pos);
-protected:
-    void drawBackground(QPainter *painter, const QRectF &rect) override;
-    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
-    void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
-    BaseObject* getObjectFromPos(QPointF pos);
-    void onObjectClicked(BaseObject *obj);
-    void updateHoverRect(QPointF pos);
 private:
     QTimer* timer = nullptr;
     const int gridSize = 100;
     Context* context;
     QGraphicsRectItem *hoverRect = nullptr;
     void onTick();
+public:
+    explicit Scene(Context* context, QGraphicsScene *parent = nullptr);
+    ~Scene();
+    QVector<BaseObject*> findNeighbors(BaseObject* objCenter);
+    int getGridSize() const;
+    bool checkLegal(QPointF pos);
+    QPointF snapToGrid(const QPointF& pos);
+    void craeteNewObject(QPointF pos, QString type);
+protected:
+    void drawBackground(QPainter *painter, const QRectF &rect) override;
+    void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
+    void keyPressEvent(QKeyEvent *event) override;
+    void updateHoverRect(QPointF pos);
 signals:
-    void objectClicked(BaseObject *obj);
+    void showObjectProperties(BaseObject *obj);
     void selectionCountChanged(int count);
 public slots:
-    void deleteObjects();
+    void deleteSelectedObjects();
+    void deleteObject(BaseObject* obj);
+    void cancelSelectionObjcts();
 };

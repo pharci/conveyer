@@ -8,7 +8,7 @@ class Conveyer : public BaseObject
     Q_OBJECT
 private:
     int rotationAngle = 0;
-    double speed = 2.0;
+    double speed = 1.0;
     QList<BaseItem*> items;
     BaseObject* prev = nullptr;
     BaseObject* next = nullptr;
@@ -22,6 +22,7 @@ public:
     virtual ~Conveyer();
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override;
     void connection(QList<BaseObject*> objects) override;
+    QWidget* createPropertiesWidget(QWidget* parent) override;
 
     void addItem(BaseItem* item);
     QList<BaseItem*> getItems();
@@ -36,9 +37,12 @@ public:
     Direction getOutDir();
 
     QPointF getStartPoint();
+    QPointF getCenterPoint();
+    QPointF getEndPoint();
 
     void turn();
     void moveItems();
+    void clearItems();
     Direction getDirectionTo(const QPointF& from, const QPointF& to);
     Direction angleInDir(int angle);
     Direction angleOutDir(int angle);

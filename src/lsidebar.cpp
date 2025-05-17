@@ -2,6 +2,7 @@
 
 #include "lsidebar.h"
 #include "context.h"
+#include "dropBtn.h"
 
 LSidebar::LSidebar(Context *context, QWidget *parent) : QWidget(parent), context(context)
 {
@@ -13,38 +14,54 @@ LSidebar::LSidebar(Context *context, QWidget *parent) : QWidget(parent), context
 
     QLabel* objBtnsLabel = new QLabel("Типы объектов: ", this);
     layout->addWidget(objBtnsLabel);
+
+    DropBtn *gen = new DropBtn("Generator");
+    gen->setText("Генератор");
+    layout->addWidget(gen);
+
+    DropBtn *conv = new DropBtn("Conveyer");
+    conv->setText("Конвейер");
+    layout->addWidget(conv);
+
+    DropBtn *recv = new DropBtn("Receiver");
+    recv->setText("Приемник");
+    layout->addWidget(recv);
+
+    DropBtn *push = new DropBtn("Pusher");
+    push->setText("Толкатель");
+    layout->addWidget(push);
     
-    QToolButton *generatorBtn = new QToolButton(this);
-    generatorBtn->setText("Generator");
-    generatorBtn->setCheckable(true);
-    generatorBtn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
-    generatorBtn->setProperty("objectType", static_cast<int>(ObjectType::Generator));
-    layout->addWidget(generatorBtn);
-    objectsGroup->addButton(generatorBtn);
+    // QToolButton *generatorBtn = new QToolButton(this);
+    // generatorBtn->setText("Generator");
+    // generatorBtn->setCheckable(true);
+    // generatorBtn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    // generatorBtn->setProperty("objectType", static_cast<int>(ObjectType::Generator));
+    // layout->addWidget(generatorBtn);
+    // objectsGroup->addButton(generatorBtn);
 
-    QToolButton *receiverBtn = new QToolButton(this);
-    receiverBtn->setText("Receiver");
-    receiverBtn->setCheckable(true);
-    receiverBtn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
-    receiverBtn->setProperty("objectType", static_cast<int>(ObjectType::Receiver));
-    layout->addWidget(receiverBtn);
-    objectsGroup->addButton(receiverBtn);
+    // QToolButton *receiverBtn = new QToolButton(this);
+    // receiverBtn->setText("Receiver");
+    // receiverBtn->setCheckable(true);
+    // receiverBtn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    // receiverBtn->setProperty("objectType", static_cast<int>(ObjectType::Receiver));
+    // layout->addWidget(receiverBtn);
+    // objectsGroup->addButton(receiverBtn);
 
-    QToolButton *conveyerBtn = new QToolButton(this);
-    conveyerBtn->setText("Conveyer");
-    conveyerBtn->setCheckable(true);
-    conveyerBtn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
-    conveyerBtn->setProperty("objectType", static_cast<int>(ObjectType::Conveyer));
-    layout->addWidget(conveyerBtn);
-    objectsGroup->addButton(conveyerBtn);
+    // QToolButton *conveyerBtn = new QToolButton(this);
+    // conveyerBtn->setText("Conveyer");
+    // conveyerBtn->setCheckable(true);
+    // conveyerBtn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    // conveyerBtn->setProperty("objectType", static_cast<int>(ObjectType::Conveyer));
+    // layout->addWidget(conveyerBtn);
+    // objectsGroup->addButton(conveyerBtn);
 
-    QToolButton *pusherBtn = new QToolButton(this);
-    pusherBtn->setText("Pusher");
-    pusherBtn->setCheckable(true);
-    pusherBtn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
-    pusherBtn->setProperty("objectType", static_cast<int>(ObjectType::Pusher));
-    layout->addWidget(pusherBtn);
-    objectsGroup->addButton(pusherBtn);
+    // QToolButton *pusherBtn = new QToolButton(this);
+    // pusherBtn->setText("Pusher");
+    // pusherBtn->setCheckable(true);
+    // pusherBtn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    // pusherBtn->setProperty("objectType", static_cast<int>(ObjectType::Pusher));
+    // layout->addWidget(pusherBtn);
+    // objectsGroup->addButton(pusherBtn);
 
 
     layout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding));

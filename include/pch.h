@@ -10,3 +10,8 @@
 #include <QToolButton>
 #include <QButtonGroup>
 #include <QLabel>
+#include <QKeyEvent>
+#include <QPropertyAnimation>
+#include <QSpinBox>
+#include <QPushButton>
+#include <QMimeData>
