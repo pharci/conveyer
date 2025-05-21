@@ -2,13 +2,16 @@
 
 class View : public QGraphicsView {
     Q_OBJECT
-private:
+  private:
     bool isPanning = false;
     QPoint panStart;
     double currentScale = 1.0;
-public:
+
+  public:
     explicit View(QWidget *parent = nullptr);
-protected:
+    bool isPanningActive() const;
+
+  protected:
     void wheelEvent(QWheelEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;

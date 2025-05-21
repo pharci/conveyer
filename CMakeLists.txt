@@ -11,10 +11,8 @@ include_directories(include)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets)
 
-file(GLOB SRC_FILES "src/*.cpp")
-file(GLOB HEADER_FILES "include/*.h")
-file(GLOB LIB_FILES "lib/*.hpp")
-
+file(GLOB_RECURSE SRC_FILES "src/*.cpp")
+file(GLOB_RECURSE HEADER_FILES "src/*.h")
 
 if(WIN32)
     # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -mwindows")
@@ -24,7 +22,6 @@ endif()
 qt_add_executable(${PROJECT_NAME} 
     ${SRC_FILES} 
     ${HEADER_FILES} 
-    ${LIB_FILES} 
     ${APP_ICON_RESOURCE_WINDOWS}
 )
 qt_add_resources(${PROJECT_NAME} "resources"
@@ -32,9 +29,9 @@ qt_add_resources(${PROJECT_NAME} "resources"
     FILES res/icon.ico
 )
 
-target_include_directories(${PROJECT_NAME} PRIVATE include lib)
+target_include_directories(${PROJECT_NAME} PRIVATE src)
 
-target_precompile_headers(conveyer PRIVATE include/pch.h)
+target_precompile_headers(conveyer PRIVATE src/common/pch.h)
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets

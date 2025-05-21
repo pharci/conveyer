@@ -1,43 +1,46 @@
-#include "pch.h"
-#include "baseObject.h"
-#include "scene.h"
-#include "conveyer.h"
+#include "scene/objects/baseObject.h"
+#include "common/pch.h"
+#include "scene/items/baseItem.h"
+#include "scene/objects/conveyer.h"
+#include "scene/scene.h"
 
-BaseObject::BaseObject(QGraphicsObject *parent, ObjectType type) : QGraphicsObject(parent), type(type) {
+BaseObject::BaseObject(QGraphicsObject *parent) : QGraphicsObject(parent) {
     setFlags(QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemIsMovable);
 }
 
 BaseObject::~BaseObject() {}
 
-QRectF BaseObject::boundingRect() const { 
-    return QRect(0, 0, size, size); 
+QRectF BaseObject::boundingRect() const {
+    return QRect(0, 0, size, size);
 }
 
-Scene* BaseObject::getScene() const {
-    return qobject_cast<Scene*>(scene());
+Scene *BaseObject::getScene() const {
+    return qobject_cast<Scene *>(scene());
 }
 
-QString BaseObject::getObjectName() {
-    switch (type) {
-        case ObjectType::Generator: return "Generator";
-        case ObjectType::Receiver: return "Receiver";
-        case ObjectType::Conveyer: return "Conveyer";
-        case ObjectType::Pusher: return "Pusher";
-        case ObjectType::None: return "None";
-        default: return "Unknown";
-    }
+void BaseObject::setConnection(ConnectionType type, BaseObject *object) {
+    connections[type] = object;
 }
 
-ObjectType BaseObject::getObjectType() {
-    return type;
+BaseObject *BaseObject::getConnection(ConnectionType type) const {
+    return connections.value(type, nullptr);
+}
+
+QMap<ConnectionType, BaseObject *> BaseObject::getConnections() const {
+    return connections;
+}
+
+void BaseObject::clearAllConnections() {
+    connections.clear();
 }
 
 void BaseObject::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     if (event->button() == Qt::LeftButton) {
         isDragging = false;
         int x = std::round(pos().x() / size) * size;
-        int y = std::round(pos().y() / size) * size;    
+        int y = std::round(pos().y() / size) * size;
         dragStartPos = QPointF(x, y);
+
         event->accept();
         return;
     }
@@ -58,13 +61,13 @@ void BaseObject::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
 
 void BaseObject::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
     if (event->button() == Qt::LeftButton) {
-        Scene* sc = getScene();
+        Scene *sc = getScene();
 
         if (isDragging) {
             QPointF finalPos = sc->snapToGrid(event->scenePos());
             if (!sc->checkLegal(finalPos)) finalPos = sc->snapToGrid(dragStartPos);
 
-            QPropertyAnimation* animation = new QPropertyAnimation(this, "pos");
+            QPropertyAnimation *animation = new QPropertyAnimation(this, "pos");
             animation->setDuration(200);
             animation->setEasingCurve(QEasingCurve::OutCubic);
             animation->setStartValue(this->pos());
@@ -77,7 +80,6 @@ void BaseObject::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
                 });
             }
             isDragging = false;
-            setZValue(0);
         }
 
         if (event->modifiers() & Qt::ControlModifier) {
@@ -86,9 +88,9 @@ void BaseObject::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
             for (QGraphicsItem *item : sc->selectedItems())
                 item->setSelected(false);
             setSelected(true);
-            
         }
 
+        setZValue(0);
         emit clicked(this);
         scene()->update();
         event->accept();

@@ -4,12 +4,12 @@
 
 class QByteArray;
 class QWidget;
-class DropBtn : public QPushButton
-{
+class DropBtn : public QPushButton {
     Q_OBJECT
-private:
+  private:
     const QByteArray type;
-public:
+
+  public:
     explicit DropBtn(QByteArray type, QWidget *parent = nullptr);
 
     void mouseMoveEvent(QMouseEvent *event) override;

@@ -1,10 +1,9 @@
-#include "pch.h"
-#include "view.h"
-#include "scene.h"
+#include "interface/view.h"
+#include "common/pch.h"
+#include "scene/scene.h"
 
 #include <QScrollBar>
 #include <QWheelEvent>
-
 
 View::View(QWidget *parent) : QGraphicsView(parent) {
     setRenderHint(QPainter::Antialiasing);
@@ -16,16 +15,19 @@ View::View(QWidget *parent) : QGraphicsView(parent) {
     viewport()->setAcceptDrops(true);
 }
 
+bool View::isPanningActive() const {
+    return isPanning;
+}
+
 void View::wheelEvent(QWheelEvent *event) {
     const double zoomStep = 1.15;
     double factor;
-    if (event->angleDelta().y() > 0) {
+    if (event->angleDelta().y() > 0)
         factor = zoomStep;
-    } else if (event->angleDelta().y() < 0) {
+    else if (event->angleDelta().y() < 0)
         factor = 1.0 / zoomStep;
-    } else {
+    else
         event->ignore();
-    }
 
     double newScale = currentScale * factor;
     if (newScale < 0.3 || newScale > 5) {
@@ -46,8 +48,9 @@ void View::wheelEvent(QWheelEvent *event) {
 }
 
 void View::mousePressEvent(QMouseEvent *event) {
-    if (event->modifiers() & Qt::AltModifier && event->button() == Qt::LeftButton) {
+    if (event->button() == Qt::RightButton) {
         isPanning = true;
+
         panStart = event->pos();
         setCursor(Qt::ClosedHandCursor);
         event->accept();
@@ -71,7 +74,7 @@ void View::mouseMoveEvent(QMouseEvent *event) {
 }
 
 void View::mouseReleaseEvent(QMouseEvent *event) {
-    if (isPanning && event->button() == Qt::LeftButton) {
+    if (isPanning && event->button() == Qt::RightButton) {
         isPanning = false;
         setCursor(Qt::ArrowCursor);
         event->accept();
@@ -80,30 +83,22 @@ void View::mouseReleaseEvent(QMouseEvent *event) {
     QGraphicsView::mouseReleaseEvent(event);
 }
 
-
 void View::dragEnterEvent(QDragEnterEvent *event) {
-    if (event->mimeData()->hasFormat("application/x-object-type")) {
-        event->acceptProposedAction();
-    }
+    if (event->mimeData()->hasFormat("application/x-object-type")) event->acceptProposedAction();
 }
 
 void View::dragMoveEvent(QDragMoveEvent *event) {
-    if (event->mimeData()->hasFormat("application/x-object-type")) {
-        event->acceptProposedAction();
-    }
+    if (event->mimeData()->hasFormat("application/x-object-type")) event->acceptProposedAction();
 }
 
 void View::dropEvent(QDropEvent *event) {
-    if (!event->mimeData()->hasFormat("application/x-object-type"))
-        return;
+    if (!event->mimeData()->hasFormat("application/x-object-type")) return;
 
     QString type = QString::fromUtf8(event->mimeData()->data("application/x-object-type"));
-    QPointF pos = mapToScene(event->position().toPoint()); // QT6: event->position(), QT5: event->pos()
+    QPointF pos = mapToScene(event->position().toPoint());
 
-    Scene* sc = qobject_cast<Scene*>(scene());
-    if (sc) {
-        sc->craeteNewObject(pos, type);
-    }
+    Scene *sc = qobject_cast<Scene *>(scene());
+    if (sc) sc->craeteNewObject(pos, type);
 
     event->acceptProposedAction();
 }

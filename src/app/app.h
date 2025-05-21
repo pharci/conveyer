@@ -7,10 +7,9 @@ class Scene;
 class RSidebar;
 class LSidebar;
 class View;
-class App : public QMainWindow
-{
+class App : public QMainWindow {
     Q_OBJECT
-public:
+  public:
     App(QWidget *parent = nullptr);
     LSidebar *lsidebar;
     Scene *scene;

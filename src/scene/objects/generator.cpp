@@ -1,38 +1,41 @@
-#include "pch.h"
-#include "generator.h"
-#include "conveyer.h"
-#include "baseItem.h"
-#include "scene.h"
+#include "scene/objects/generator.h"
+#include "common/enums.h"
+#include "common/pch.h"
+#include "scene/items/baseItem.h"
+#include "scene/objects/conveyer.h"
+#include "scene/scene.h"
 
-Generator::Generator(QGraphicsObject *parent) : BaseObject(parent, ObjectType::Generator) {
+Generator::Generator(QGraphicsObject *parent) : BaseObject(parent) {
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &Generator::spawnItem);
+
+    updateTimer = new QTimer(this);
+    connect(updateTimer, &QTimer::timeout, this, [this]() {
+        update();
+    });
+    updateTimer->start(16);
 }
 
 Generator::~Generator() {}
 
 void Generator::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
+    BaseObject *next = getConnection(ConnectionType::Output);
+
     QRectF rect = boundingRect();
-    painter->setBrush(related ? Qt::blue : Qt::red); 
+    painter->setBrush(next ? Qt::blue : Qt::red);
     painter->setPen(QPen(
-        isSelected() ? Qt::green : Qt::black, 
-        isSelected() ? 4.0 : 4.0)
-    );
-    if (isSelected()) { painter->setPen(QPen(Qt::green, 3));}
+        isSelected() ? Qt::green : Qt::black,
+        isSelected() ? 4.0 : 4.0));
+    if (isSelected()) { painter->setPen(QPen(Qt::green, 3)); }
     painter->drawRect(rect.adjusted(3, 3, -3, -3));
 
-    painter->setBrush(related ? Qt::white : Qt::gray); 
+    painter->setBrush(next ? Qt::white : Qt::gray);
     painter->drawEllipse(rect.center(), rect.width() / 2 - 10, rect.height() / 2 - 10);
 
     QString countText = QString::number(timer->remainingTime() / 1000.0, 'f', 2);
     painter->setPen(Qt::black);
     painter->setFont(QFont("Arial", 14));
     painter->drawText(rect, Qt::AlignCenter, countText);
-}
-
-void Generator::setRelated(BaseObject* obj) { 
-    related = obj; 
-    start();
 }
 
 void Generator::start() {
@@ -43,40 +46,40 @@ void Generator::stop() {
     timer->stop();
 }
 
-BaseObject* Generator::getRelated() { return related; }
-
-void Generator::connection(QList<BaseObject*> objects) {
-    if (related) {
-        if (auto* conv = qobject_cast<Conveyer*>(related)) conv->setPrev(nullptr);
-        related = nullptr;
-        stop();
+void Generator::connection(QList<BaseObject *> objects) {
+    BaseObject *next = getConnection(ConnectionType::Output);
+    if (next) {
+        next->setConnection(ConnectionType::Input, nullptr);
     }
+    clearAllConnections();
 
-    for (BaseObject* neighbor : objects) {
-        if (auto* conv = qobject_cast<Conveyer*>(neighbor)) {
-            Direction dir = conv->getDirectionTo(conv->pos(), this->pos());
+    for (BaseObject *neighbor : objects) {
+        if (auto *conv = qobject_cast<Conveyer *>(neighbor)) {
+            Direction dir = getDirectionTo(conv->pos(), this->pos());
             if (conv->getInDir() == dir) {
-                setRelated(conv);
-                conv->setPrev(this);
+                setConnection(ConnectionType::Output, conv);
+                conv->setConnection(ConnectionType::Input, this);
+                start();
             }
-        } 
+        }
     }
 }
 
 void Generator::spawnItem() {
-    if (!related || related->getObjectType() != ObjectType::Conveyer)
-        return;
+    BaseObject *next = getConnection(ConnectionType::Output);
 
-    Conveyer* conveyer = dynamic_cast<Conveyer*>(related);
-    auto* item = new BaseItem();
-    item->setPos(conveyer->getStartPoint());
-    conveyer->addItem(item);
-    scene()->addItem(item);
+    if (!next) return;
+
+    if (auto *conveyer = dynamic_cast<Conveyer *>(next)) {
+        auto *item = new BaseItem();
+        item->setPos(conveyer->getStartPoint());
+        scene()->addItem(item);
+    }
 }
 
-QWidget* Generator::createPropertiesWidget(QWidget* parent) {
-    QWidget* container = new QWidget(parent);
-    QVBoxLayout* layout = new QVBoxLayout(container);
+QWidget *Generator::createPropertiesWidget(QWidget *parent) {
+    QWidget *container = new QWidget(parent);
+    QVBoxLayout *layout = new QVBoxLayout(container);
 
     QLabel *nameLabel = new QLabel("Генератор", container);
     layout->addWidget(nameLabel);
@@ -94,9 +97,10 @@ QWidget* Generator::createPropertiesWidget(QWidget* parent) {
         }
     });
 
-    QLabel* label = new QLabel("Частота:", container);
-    QSpinBox* spin = new QSpinBox(container);
+    QLabel *label = new QLabel("Частота:", container);
+    QSpinBox *spin = new QSpinBox(container);
     spin->setRange(300, 100000);
+    spin->setSingleStep(100);
     spin->setValue(timer->interval());
     layout->addWidget(label);
     layout->addWidget(spin);
@@ -105,11 +109,13 @@ QWidget* Generator::createPropertiesWidget(QWidget* parent) {
     });
 
     layout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding));
-    
+
     QPushButton *deleteBtn = new QPushButton("Удалить", container);
     layout->addWidget(deleteBtn);
     connect(deleteBtn, &QPushButton::clicked, this, [this]() {
-        getScene()->deleteObject(this);
+        Scene *sc = getScene();
+        sc->deleteObject(this);
+        sc->showObjectProperties(nullptr);
     });
 
     container->setLayout(layout);
