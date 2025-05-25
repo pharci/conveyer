@@ -2,6 +2,8 @@
 /.vscode
 /out
 
+.clang-format
+
 *.json
 *.iss
 
