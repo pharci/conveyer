@@ -11,6 +11,5 @@ class DropBtn : public QPushButton {
 
   public:
     explicit DropBtn(QByteArray type, QWidget *parent = nullptr);
-
     void mouseMoveEvent(QMouseEvent *event) override;
 };

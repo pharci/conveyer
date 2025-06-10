@@ -29,8 +29,10 @@ class Scene : public QGraphicsScene {
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
     void updateHoverRect(QPointF pos);
+
   signals:
     void showObjectProperties(BaseObject *obj);
+
   public slots:
     void deleteSelectedObjects();
     void deleteObject(BaseObject *obj);

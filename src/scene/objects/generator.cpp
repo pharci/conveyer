@@ -67,7 +67,6 @@ void Generator::connection(QList<BaseObject *> objects) {
 
 void Generator::spawnItem() {
     BaseObject *next = getConnection(ConnectionType::Output);
-
     if (!next) return;
 
     if (auto *conveyer = dynamic_cast<Conveyer *>(next)) {

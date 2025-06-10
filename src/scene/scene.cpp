@@ -19,11 +19,11 @@ Scene::Scene(QGraphicsScene *parent) : QGraphicsScene(parent) {
     timer->start(16);
 }
 
-Scene::~Scene() {}
-
 void Scene::onTick() {
     advance();
 }
+
+Scene::~Scene() {}
 
 int Scene::getGridSize() const { return gridSize; }
 
